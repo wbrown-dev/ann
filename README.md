@@ -19,6 +19,14 @@ provider to keep only the five per outlet most likely to **still matter in 30
 days** — significance, not virality — and writes a small Markdown digest. A
 Streamlit dashboard then puts those headlines on a calm, rotating display.
 
+## Screenshots
+
+![ANN TV dashboard showing a WSJ headline](docs/screenshots/ann-tv-wsj.jpg)
+
+| NYT headline rotation | AP headline rotation |
+| --- | --- |
+| ![ANN TV dashboard showing a NYT headline](docs/screenshots/ann-tv-nyt.jpg) | ![ANN TV dashboard showing an AP headline](docs/screenshots/ann-tv-ap.jpg) |
+
 ## Attribution
 
 The original concept, premise, and digest format are the work of
@@ -63,13 +71,11 @@ run with `ANN_MODEL_PROVIDER=openai` / `ANN_MODEL_PROVIDER=gemini`, or pass
 
 ## The dashboard
 
-The Streamlit app (dark "ANN" visual system) rotates through **every** headline
-in the latest digest in the main window — **10 seconds each, with no repeats
-until all have been shown**, then reshuffles. Each outlet has its own accent
-color, and the full digest is listed below the rotating hero. A separate weekly
-retrospective tab shows the latest `retrospective-*.md` file from
-`ann.py retro`. The dashboard checks for updated daily and retrospective files
-every 30 seconds.
+The Streamlit app uses a TV-friendly dark ANN display: a four-outlet left rail,
+live date/time, outlet-specific accent colors, and a large rotating headline
+panel with high-contrast white text. It rotates through every headline in the
+latest digest — 10 seconds each — and highlights the active outlet as each story
+appears. The dashboard checks for updated digest files every 30 seconds.
 
 ## Run with Docker
 
