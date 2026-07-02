@@ -6,8 +6,11 @@ import re
 from dataclasses import dataclass, field
 from datetime import date, timedelta
 
+from ann_app.config import MODEL_NAME, SELECTION_STANDARD, resolve_model_settings
 from ann_app.fetch import _normalize_title
+from ann_app.filter import FilterError, _parse_response
 from ann_app.parse import Headline, flatten_headlines, parse_digest
+from ann_app.providers import ModelProvider, ProviderError, build_provider
 
 RETRO_MIN_DIGESTS = 2
 RETRO_DEFAULT_DAYS = 7
@@ -169,6 +172,85 @@ def rank_stories(stories: list[Story]) -> list[Story]:
     )
 
 
+def _build_rerank_prompt(stories: list[Story]) -> str:
+    lines = []
+    for i, story in enumerate(stories):
+        day_word = "day" if len(story.dates) == 1 else "days"
+        lines.append(
+            f"{i}. {story.title} "
+            f"({len(story.dates)} {day_word}; outlets: {', '.join(story.outlets)}; "
+            f"best daily rank: {story.best_rank})"
+        )
+
+    return f"""You are re-ranking a weekly news retrospective. Below is the \
+selection standard you must apply, followed by candidate stories numbered \
+starting at 0.
+
+SELECTION STANDARD:
+{SELECTION_STANDARD}
+
+Rank the candidate stories by durable significance: which stories are most \
+likely to still matter in 30 days. Recurrence metadata is useful context, but \
+do not select anything outside the numbered list. Return only story numbers in \
+ranked order. Do not invent or rewrite headlines.
+
+CANDIDATE STORIES:
+{chr(10).join(lines)}
+
+Respond with ONLY a JSON object in this exact shape:
+{{"stories": [2, 0, 5, 1]}}
+"""
+
+
+def rerank_stories(
+    stories: list[Story],
+    client: object | None = None,
+    provider: str | ModelProvider | None = None,
+    model: str | None = None,
+) -> list[Story]:
+    """Optionally re-rank retrospective stories by model-selected indices only."""
+    if not stories:
+        return []
+
+    model_provider, model_name = _resolve_provider(provider, model, client)
+    try:
+        text = model_provider.complete(_build_rerank_prompt(stories), model_name)
+    except ProviderError as exc:
+        raise FilterError(str(exc)) from exc
+
+    selections = _parse_response(text)
+    indices = selections.get("stories", [])
+
+    ranked: list[Story] = []
+    seen: set[int] = set()
+    for idx in indices:
+        if type(idx) is int and 0 <= idx < len(stories) and idx not in seen:
+            ranked.append(stories[idx])
+            seen.add(idx)
+
+    ranked.extend(story for i, story in enumerate(stories) if i not in seen)
+    return ranked
+
+
+def _resolve_provider(
+    provider: str | ModelProvider | None,
+    model: str | None,
+    client: object | None,
+) -> tuple[ModelProvider, str]:
+    if provider is not None and not isinstance(provider, str):
+        model_name = (model or MODEL_NAME).strip()
+        if not model_name:
+            raise FilterError("model name cannot be empty")
+        return provider, model_name
+
+    try:
+        provider_name, model_name = resolve_model_settings(provider, model)
+    except ValueError as exc:
+        raise FilterError(str(exc)) from exc
+
+    return build_provider(provider_name, client=client), model_name
+
+
 def retrospective_filename(latest: date) -> str:
     iso = latest.isocalendar()
     return f"retrospective-{iso.year:04d}-W{iso.week:02d}.md"
@@ -223,6 +305,10 @@ def build_retrospective(
     repo_root: str,
     days: int = RETRO_DEFAULT_DAYS,
     top: int = RETRO_DEFAULT_TOP,
+    rerank: bool = False,
+    provider: str | ModelProvider | None = None,
+    model: str | None = None,
+    client: object | None = None,
 ) -> RetroResult:
     files = find_recent_digests(repo_root, days=days)
     if not files:
@@ -236,7 +322,10 @@ def build_retrospective(
 
     latest = files[-1].date
     span_start = files[0].date
-    stories = rank_stories(cluster_stories(dated_headlines))[:top]
+    stories = rank_stories(cluster_stories(dated_headlines))
+    if rerank:
+        stories = rerank_stories(stories, provider=provider, model=model, client=client)
+    stories = stories[:top]
 
     if not stories:
         return RetroResult(

@@ -27,7 +27,7 @@ RSS / Google News -> fetch/cache -> provider index selection -> resolve AP URLs
 | `ann_app/resolve.py` | Best-effort resolution of selected AP Google News links to canonical publisher URLs. |
 | `ann_app/render.py` | Render selections to daily Markdown and update the README link. |
 | `ann_app/parse.py` | Parse daily digest and weekly retrospective Markdown into typed objects, and locate the latest generated files. |
-| `ann_app/retrospective.py` | Build deterministic weekly retrospectives from prior daily digests. |
+| `ann_app/retrospective.py` | Build weekly retrospectives from prior daily digests, with optional provider index-only re-ranking. |
 | `ann.py` | CLI entry point for `run` and `retro`. |
 | `streamlit_app.py` | Rotating dashboard that auto-detects changed digest files. |
 
@@ -78,3 +78,14 @@ them to a self-contained HTML/JS component:
 - A timed Streamlit fragment checks the latest daily digest and retrospective
   filenames and mtimes every 30 seconds, then reruns when new or overwritten
   generated content appears.
+
+## Retrospective Ranking
+
+`ann.py retro` defaults to a deterministic offline ranking: story clusters are
+ordered by distinct days seen, best daily rank, appearances, and title. With
+`--rerank-model`, ANN sends the already-clustered `Story` objects to the
+configured provider as numbered candidates and accepts only a JSON object with a
+`stories` index list. Invalid, duplicate, and out-of-range indices are ignored;
+omitted stories are appended in heuristic order. Rendering still uses the
+original `Story` objects, so titles and links remain verbatim from prior daily
+digests.

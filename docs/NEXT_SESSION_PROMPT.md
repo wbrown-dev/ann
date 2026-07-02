@@ -31,6 +31,5 @@ House rules:
 - Only modify files within ~/Desktop/development/ANN/.
 ```
 
-The original Sessions 4-11 roadmap is complete and archived in Git history.
-The current next-phase item is Session 12: optional model-assisted
-retrospective re-ranking, index-only.
+The original Sessions 4-12 roadmap is complete and archived in Git history.
+No next phase is currently selected; see docs/CONTINUITY.md open ideas.

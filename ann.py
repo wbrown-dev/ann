@@ -101,8 +101,40 @@ def run(
     return 0
 
 
-def retro(days: int, top: int, dry_run: bool) -> int:
-    result = build_retrospective(REPO_ROOT, days=days, top=top)
+def retro(
+    days: int,
+    top: int,
+    dry_run: bool,
+    rerank_model: bool = False,
+    model_provider: str | None = None,
+    model: str | None = None,
+) -> int:
+    if rerank_model:
+        try:
+            resolved_provider, resolved_model = resolve_model_settings(model_provider, model)
+        except ValueError as exc:
+            print(f"error: {exc}", file=sys.stderr)
+            return 1
+        print(
+            "Re-ranking retrospective stories by index "
+            f"with {resolved_provider}:{resolved_model}..."
+        )
+    else:
+        resolved_provider = None
+        resolved_model = None
+
+    try:
+        result = build_retrospective(
+            REPO_ROOT,
+            days=days,
+            top=top,
+            rerank=rerank_model,
+            provider=resolved_provider,
+            model=resolved_model,
+        )
+    except FilterError as exc:
+        print(f"error: {exc}", file=sys.stderr)
+        return 1
 
     if result.digest_count < RETRO_MIN_DIGESTS:
         print(
@@ -198,6 +230,22 @@ def main() -> int:
         action="store_true",
         help="Print the retrospective instead of writing it.",
     )
+    retro_parser.add_argument(
+        "--rerank-model",
+        action="store_true",
+        help="Optionally re-rank clustered stories with the configured model, by index only.",
+    )
+    retro_parser.add_argument(
+        "--model-provider",
+        choices=SUPPORTED_MODEL_PROVIDERS,
+        default=None,
+        help="Model provider for --rerank-model (default: ANN_MODEL_PROVIDER or anthropic).",
+    )
+    retro_parser.add_argument(
+        "--model",
+        default=None,
+        help="Model name for --rerank-model (default: ANN_MODEL or provider default).",
+    )
 
     args = parser.parse_args()
 
@@ -213,7 +261,14 @@ def main() -> int:
         )
 
     if args.command == "retro":
-        return retro(args.days, args.top, args.dry_run)
+        return retro(
+            args.days,
+            args.top,
+            args.dry_run,
+            rerank_model=args.rerank_model,
+            model_provider=args.model_provider,
+            model=args.model,
+        )
 
     parser.print_help()
     return 1

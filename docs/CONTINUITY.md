@@ -1,8 +1,9 @@
 # Continuity
 
-ANN's original roadmap is complete. Sessions 4-10 shipped the production
+ANN's original roadmap is complete. Sessions 4-12 shipped the production
 workflow, URL quality improvements, deterministic replay, optional outlets,
-weekly retrospectives, dashboard auto-refresh, and provider/model flexibility.
+weekly retrospectives, dashboard auto-refresh, provider/model flexibility,
+dashboard retrospective display, and optional retrospective re-ranking.
 
 ## Current State
 
@@ -16,7 +17,8 @@ weekly retrospectives, dashboard auto-refresh, and provider/model flexibility.
 - Coverage: optional `GUARDIAN`, `BBC`, and `NPR` outlets are available through
   `ANN_EXTRA_OUTLETS`.
 - Retrospective: `ann.py retro` builds a deterministic weekly digest from prior
-  daily digests.
+  daily digests, with optional provider-assisted index-only re-ranking via
+  `--rerank-model`.
 - Dashboard: daily digest and weekly retrospective tabs auto-check for new or
   overwritten generated files every 30 seconds.
 - Providers: Anthropic and OpenAI can be selected through env/config or CLI
@@ -24,7 +26,7 @@ weekly retrospectives, dashboard auto-refresh, and provider/model flexibility.
 
 ## Verification Baseline
 
-- `.venv/bin/python -m pytest`: 78 passing.
+- `.venv/bin/python -m pytest`: 82 passing.
 - `.venv/bin/ruff check .`: clean.
 - Use `.venv/bin/python -m pytest`; the system Python 3.14 may not have all
   project dependencies.
@@ -41,12 +43,11 @@ weekly retrospectives, dashboard auto-refresh, and provider/model flexibility.
 | 9 | Dashboard auto-refresh | `cb41081` |
 | 10 | Model/provider flexibility with safe key handling | `aafb9c4` |
 | 11 | Dashboard tab for the latest retrospective | `b072fc7` |
+| 12 | Optional model-assisted retrospective re-ranking | pending |
 
 ## Next Phase
 
-| ID | Priority | Goal |
-| --- | --- | --- |
-| 12 | P3 | Optional model-assisted retrospective re-ranking, index-only. |
+No next phase is selected. See open ideas below.
 
 ## Invariants
 
@@ -61,6 +62,5 @@ weekly retrospectives, dashboard auto-refresh, and provider/model flexibility.
 
 ## Open Ideas
 
-- Optional model-assisted retrospective re-ranking, still index-only.
 - Consider additional providers only behind the same normalized index-only
   interface and env/in-memory key boundaries.

@@ -7,6 +7,7 @@ from ann_app.retrospective import (
     cluster_stories,
     find_recent_digests,
     rank_stories,
+    rerank_stories,
     retrospective_filename,
 )
 
@@ -106,6 +107,51 @@ def test_ranking_orders_by_distinct_days():
     assert day_counts == sorted(day_counts, reverse=True)
 
 
+class StubProvider:
+    name = "anthropic"
+
+    def __init__(self, response_text):
+        self._response_text = response_text
+        self.calls = []
+
+    def complete(self, prompt, model):
+        self.calls.append({"prompt": prompt, "model": model})
+        return self._response_text
+
+
+def test_rerank_stories_uses_index_only_model_order():
+    dated = [
+        (date(2026, 6, 30), flatten_headlines(parse_digest(DAY1))),
+        (date(2026, 7, 1), flatten_headlines(parse_digest(DAY2))),
+        (date(2026, 7, 2), flatten_headlines(parse_digest(DAY3))),
+    ]
+    stories = rank_stories(cluster_stories(dated))
+    provider = StubProvider('{"stories": [1, 0]}')
+
+    ranked = rerank_stories(stories, provider=provider, model="stub-model")
+
+    assert ranked[0] is stories[1]
+    assert ranked[1] is stories[0]
+    assert sorted(id(story) for story in ranked) == sorted(id(story) for story in stories)
+    assert "CANDIDATE STORIES" in provider.calls[0]["prompt"]
+    assert provider.calls[0]["model"] == "stub-model"
+
+
+def test_rerank_stories_ignores_invalid_duplicate_indices_and_appends_omitted():
+    dated = [
+        (date(2026, 6, 30), flatten_headlines(parse_digest(DAY1))),
+        (date(2026, 7, 1), flatten_headlines(parse_digest(DAY2))),
+        (date(2026, 7, 2), flatten_headlines(parse_digest(DAY3))),
+    ]
+    stories = rank_stories(cluster_stories(dated))
+    provider = StubProvider('{"stories": [2, 99, "x", 2, 0]}')
+
+    ranked = rerank_stories(stories, provider=provider, model="stub-model")
+
+    assert ranked[:2] == [stories[2], stories[0]]
+    assert ranked[2:] == [story for i, story in enumerate(stories) if i not in {0, 2}]
+
+
 def test_build_retrospective_end_to_end(tmp_path):
     _write_week(tmp_path)
 
@@ -133,6 +179,31 @@ def test_build_retrospective_no_fabrication(tmp_path):
         assert story.title in combined
 
 
+def test_build_retrospective_can_rerank_with_stub_provider(tmp_path):
+    _write_week(tmp_path)
+    provider = StubProvider('{"stories": [1, 0]}')
+    heuristic_stories = rank_stories(
+        cluster_stories(
+            [
+                (date(2026, 6, 30), flatten_headlines(parse_digest(DAY1))),
+                (date(2026, 7, 1), flatten_headlines(parse_digest(DAY2))),
+                (date(2026, 7, 2), flatten_headlines(parse_digest(DAY3))),
+            ]
+        )
+    )
+
+    result = build_retrospective(
+        str(tmp_path),
+        days=7,
+        rerank=True,
+        provider=provider,
+        model="stub-model",
+    )
+
+    assert result.stories[0].title == heuristic_stories[1].title
+    assert "Weekly Retrospective" in result.markdown
+
+
 def test_retro_refuses_below_min_digests(tmp_path, monkeypatch):
     (tmp_path / "headlines-2026-07-02.md").write_text(DAY3, encoding="utf-8")
     monkeypatch.setattr(ann, "REPO_ROOT", str(tmp_path))
@@ -153,3 +224,36 @@ def test_retro_writes_file(tmp_path, monkeypatch):
     out = tmp_path / "retrospective-2026-W27.md"
     assert out.exists()
     assert "Weekly Retrospective" in out.read_text(encoding="utf-8")
+
+
+def test_retro_passes_rerank_model_provider_and_model(tmp_path, monkeypatch):
+    _write_week(tmp_path)
+    monkeypatch.setattr(ann, "REPO_ROOT", str(tmp_path))
+    seen = {}
+
+    def _build(repo_root, **kwargs):
+        seen.update(kwargs)
+        return build_retrospective(
+            repo_root,
+            days=kwargs["days"],
+            top=kwargs["top"],
+            rerank=kwargs["rerank"],
+            provider=StubProvider('{"stories": [0]}'),
+            model=kwargs["model"],
+        )
+
+    monkeypatch.setattr(ann, "build_retrospective", _build)
+
+    rc = ann.retro(
+        days=7,
+        top=10,
+        dry_run=True,
+        rerank_model=True,
+        model_provider="openai",
+        model="gpt-test",
+    )
+
+    assert rc == 0
+    assert seen["rerank"] is True
+    assert seen["provider"] == "openai"
+    assert seen["model"] == "gpt-test"

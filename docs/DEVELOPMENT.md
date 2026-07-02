@@ -120,6 +120,7 @@ daily `headlines-YYYY-MM-DD.md` files:
 .venv/bin/python ann.py retro           # writes retrospective-YYYY-Www.md
 .venv/bin/python ann.py retro --dry-run # print without writing
 .venv/bin/python ann.py retro --days 7 --top 10
+.venv/bin/python ann.py retro --rerank-model --model-provider openai --model gpt-4.1-mini
 ```
 
 It parses the last `--days` digests (windowed off the newest available digest,
@@ -131,9 +132,19 @@ headline carried from a real prior digest, preserving the no-fabrication
 guarantee. The command refuses (exit 2) if fewer than two recent digests exist
 or no stories are found.
 
+Add `--rerank-model` to optionally re-rank the clustered stories with the
+configured provider before the final `--top` cutoff. The model receives numbered
+story candidates plus recurrence metadata and must return `{"stories": [...]}`;
+ANN resolves those indices back to the existing `Story` objects, ignores invalid
+or duplicate indices, and appends any omitted stories in heuristic order. This
+preserves the no-fabrication guarantee while allowing model judgment over
+durable significance. Provider and model selection use the same
+`ANN_MODEL_PROVIDER` / `ANN_MODEL` environment variables or `--model-provider` /
+`--model` flags as the daily digest.
+
 ## R&D notes
 
 Areas open for exploration:
 
-- Optional model-assisted re-ranking of the retrospective (index-only, to keep
-  the no-fabrication guarantee).
+- Additional retrospective ranking experiments behind the same index-only
+  interface.

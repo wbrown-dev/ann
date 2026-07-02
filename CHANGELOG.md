@@ -8,6 +8,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- Optional provider-assisted retrospective re-ranking. `ann.py retro
+  --rerank-model` sends clustered retrospective stories to the configured model
+  as numbered candidates and accepts only a `{"stories": [...]}` index list.
+  ANN resolves those indices back to existing story objects, ignores invalid or
+  duplicate indices, appends omitted stories in heuristic order, and renders the
+  original prior-digest headline text and links unchanged. `--model-provider`
+  and `--model` are available on `retro` for this opt-in model call.
 - The Streamlit dashboard now has separate tabs for the daily headline rotation
   and the latest `retrospective-*.md` weekly retrospective. The dashboard
   auto-checks both file families for filename or mtime changes, and
@@ -80,7 +87,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 - Refreshed the resume prompt and continuity/status verification baseline now
-  that Session 11 is shipped and the test suite contains 78 tests.
+  that Session 12 is shipped and the test suite contains 82 tests.
 - Compressed completed continuity docs into a final-state archive, updated the
   resume prompt for post-roadmap work, and refreshed architecture docs to cover
   the shipped cache, resolver, retrospective, and auto-refresh components.
