@@ -4,12 +4,21 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-MODEL_PROVIDER = os.environ.get("ANN_MODEL_PROVIDER", "anthropic").strip().lower()
+
+def _env_value(name: str) -> str | None:
+    value = os.environ.get(name)
+    if value is None:
+        return None
+    stripped = value.strip()
+    return stripped or None
+
+
+MODEL_PROVIDER = (_env_value("ANN_MODEL_PROVIDER") or "anthropic").lower()
 DEFAULT_MODEL_BY_PROVIDER = {
     "anthropic": "claude-sonnet-5",
     "openai": "gpt-4.1-mini",
 }
-MODEL_NAME = os.environ.get("ANN_MODEL") or DEFAULT_MODEL_BY_PROVIDER.get(
+MODEL_NAME = _env_value("ANN_MODEL") or DEFAULT_MODEL_BY_PROVIDER.get(
     MODEL_PROVIDER,
     DEFAULT_MODEL_BY_PROVIDER["anthropic"],
 )
@@ -149,14 +158,12 @@ The digest intentionally avoids or deprioritizes:
 
 
 def resolve_model_settings(provider: str | None = None, model: str | None = None) -> tuple[str, str]:
-    resolved_provider = (provider or os.environ.get("ANN_MODEL_PROVIDER") or "anthropic").strip().lower()
+    resolved_provider = ((provider.strip() if provider else None) or _env_value("ANN_MODEL_PROVIDER") or "anthropic").lower()
     if resolved_provider not in DEFAULT_MODEL_BY_PROVIDER:
         supported = ", ".join(SUPPORTED_MODEL_PROVIDERS)
         raise ValueError(f"unsupported model provider {resolved_provider!r}; choose one of: {supported}")
 
-    resolved_model = (model or os.environ.get("ANN_MODEL") or DEFAULT_MODEL_BY_PROVIDER[resolved_provider]).strip()
-    if not resolved_model:
-        raise ValueError("model name cannot be empty")
+    resolved_model = (model.strip() if model else None) or _env_value("ANN_MODEL") or DEFAULT_MODEL_BY_PROVIDER[resolved_provider]
 
     return resolved_provider, resolved_model
 

@@ -39,9 +39,35 @@ Actions secret (Settings -> Secrets and variables -> Actions -> New repository
 secret): `ANTHROPIC_API_KEY` for the default Anthropic provider, or
 `OPENAI_API_KEY` when `ANN_MODEL_PROVIDER=openai`. Optional repository
 variables `ANN_MODEL_PROVIDER` and `ANN_MODEL` can switch provider/model without
-editing source. Secrets are injected into the generate step via `env:` and
-masked by GitHub in logs; they are never committed and never printed by
-`ann.py`.
+editing source, and optional variable `ANN_EXTRA_OUTLETS` can enable
+`GUARDIAN`, `BBC`, and/or `NPR` for scheduled production runs. Secrets are
+injected into workflow steps via `env:` and masked by GitHub in logs; they are
+never committed and never printed by `ann.py`.
+
+The workflow validates the selected provider and required secret immediately
+after dependency installation. If the selected provider is unsupported or its
+secret is missing, the job exits before fetching feeds or attempting a model
+call.
+
+Blank `ANN_MODEL_PROVIDER` or `ANN_MODEL` variables are treated the same as
+unset variables, so the scheduled workflow safely falls back to Anthropic and
+`claude-sonnet-5` unless a maintainer explicitly configures another provider or
+model.
+
+### Production readiness checklist
+
+Before relying on the scheduled digest:
+
+1. Confirm Actions are enabled for the repository.
+2. Add one provider secret: `ANTHROPIC_API_KEY` for the default provider, or
+   `OPENAI_API_KEY` plus repository variable `ANN_MODEL_PROVIDER=openai`.
+3. Optionally set repository variable `ANN_MODEL` to pin a specific model.
+4. Optionally set `ANN_EXTRA_OUTLETS` in the workflow if production should
+   include `GUARDIAN`, `BBC`, or `NPR` beyond the default four outlets.
+5. Run the `Daily digest` workflow manually from the Actions tab.
+6. Confirm the run commits a new `headlines-YYYY-MM-DD.md` file and updates the
+   README headline link, or exits before the commit step with a clear error.
+7. Confirm CI remains green after the digest commit.
 
 ### Local alternative (launchd)
 
@@ -100,5 +126,22 @@ docker compose run --rm ann python ann.py run
 
 ## Releases
 
-- Update [`CHANGELOG.md`](../CHANGELOG.md) and follow SemVer.
-- Tag a release (`vX.Y.Z`); the digest files themselves are data, not releases.
+- Update [`CHANGELOG.md`](../CHANGELOG.md), move shipped entries from
+  `[Unreleased]` into a dated version section, and bump
+  [`pyproject.toml`](../pyproject.toml).
+- Run `.venv/bin/python -m pytest` and `.venv/bin/ruff check .`.
+- Commit the release prep with a clear message.
+- Create an annotated tag:
+
+  ```bash
+  git tag -a vX.Y.Z -m "ANN vX.Y.Z"
+  ```
+
+- Push the branch and tag:
+
+  ```bash
+  git push origin main
+  git push origin vX.Y.Z
+  ```
+
+Digest files are data snapshots, not release artifacts.

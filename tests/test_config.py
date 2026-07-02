@@ -66,6 +66,16 @@ def test_resolve_model_settings_defaults_to_anthropic(monkeypatch):
     assert model == "claude-sonnet-5"
 
 
+def test_resolve_model_settings_treats_blank_env_as_unset(monkeypatch):
+    monkeypatch.setenv("ANN_MODEL_PROVIDER", "  ")
+    monkeypatch.setenv("ANN_MODEL", "  ")
+
+    provider, model = resolve_model_settings()
+
+    assert provider == "anthropic"
+    assert model == "claude-sonnet-5"
+
+
 def test_resolve_model_settings_accepts_openai():
     provider, model = resolve_model_settings("openai", "gpt-test")
 

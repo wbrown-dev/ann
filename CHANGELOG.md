@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.0] - 2026-07-02
+
 ### Added
 - Optional provider-assisted retrospective re-ranking. `ann.py retro
   --rerank-model` sends clustered retrospective stories to the configured model
@@ -86,8 +88,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   linear backoff) and reuses a pooled `requests.Session` across all feeds.
 
 ### Changed
+- Bumped project metadata to `0.2.0` and expanded Dev-Ops release/production
+  documentation with a scheduled digest readiness checklist.
+- The daily digest workflow now validates the selected provider and required
+  secret before fetching feeds, and passes optional `ANN_EXTRA_OUTLETS` through
+  from repository variables for scheduled production runs.
 - Refreshed the resume prompt and continuity/status verification baseline now
-  that Session 12 is shipped and the test suite contains 82 tests.
+  that Session 12 is shipped and the test suite contains 83 tests.
 - Compressed completed continuity docs into a final-state archive, updated the
   resume prompt for post-roadmap work, and refreshed architecture docs to cover
   the shipped cache, resolver, retrospective, and auto-refresh components.
@@ -100,6 +107,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `HEADLINES_PER_OUTLET` instead of a hardcoded `5`.
 
 ### Fixed
+- Blank `ANN_MODEL_PROVIDER` or `ANN_MODEL` environment variables now fall back
+  to the default provider/model instead of overriding defaults with empty
+  strings, matching GitHub Actions behavior for unset repository variables.
 - Escaped RSS-sourced headline titles and validated link schemes (http/https
   only) in the Streamlit dashboard, closing an HTML/script injection vector in
   both the rotating hero component and the outlet cards.

@@ -29,10 +29,39 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
+      - name: Validate provider secret
+        env:
+          ANN_MODEL_PROVIDER: ${{ vars.ANN_MODEL_PROVIDER }}
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+        run: |
+          set -euo pipefail
+          provider="${ANN_MODEL_PROVIDER:-anthropic}"
+          provider="$(printf '%s' "$provider" | tr '[:upper:]' '[:lower:]' | xargs)"
+          case "$provider" in
+            ""|"anthropic")
+              test -n "${ANTHROPIC_API_KEY:-}" || {
+                echo "ANTHROPIC_API_KEY secret is required for ANN_MODEL_PROVIDER=anthropic."
+                exit 1
+              }
+              ;;
+            "openai")
+              test -n "${OPENAI_API_KEY:-}" || {
+                echo "OPENAI_API_KEY secret is required for ANN_MODEL_PROVIDER=openai."
+                exit 1
+              }
+              ;;
+            *)
+              echo "Unsupported ANN_MODEL_PROVIDER: $provider"
+              exit 1
+              ;;
+          esac
+
       - name: Generate today's digest
         env:
           ANN_MODEL_PROVIDER: ${{ vars.ANN_MODEL_PROVIDER }}
           ANN_MODEL: ${{ vars.ANN_MODEL }}
+          ANN_EXTRA_OUTLETS: ${{ vars.ANN_EXTRA_OUTLETS }}
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
         run: python ann.py run

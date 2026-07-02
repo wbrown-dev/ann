@@ -1,9 +1,10 @@
 # Continuity
 
-ANN's original roadmap is complete. Sessions 4-12 shipped the production
+ANN's original roadmap is complete. Sessions 4-13 shipped the production
 workflow, URL quality improvements, deterministic replay, optional outlets,
 weekly retrospectives, dashboard auto-refresh, provider/model flexibility,
-dashboard retrospective display, and optional retrospective re-ranking.
+dashboard retrospective display, optional retrospective re-ranking, and
+release hardening for v0.2.0.
 
 ## Current State
 
@@ -23,10 +24,13 @@ dashboard retrospective display, and optional retrospective re-ranking.
   overwritten generated files every 30 seconds.
 - Providers: Anthropic and OpenAI can be selected through env/config or CLI
   flags while preserving index-only selection and env-only key handling.
+- Release state: `pyproject.toml` is bumped to `0.2.0`, the changelog has a
+  dated `0.2.0` section, Dev-Ops documents production setup and release steps,
+  and blank GitHub Actions model variables fall back to defaults.
 
 ## Verification Baseline
 
-- `.venv/bin/python -m pytest`: 82 passing.
+- `.venv/bin/python -m pytest`: 83 passing.
 - `.venv/bin/ruff check .`: clean.
 - Use `.venv/bin/python -m pytest`; the system Python 3.14 may not have all
   project dependencies.
@@ -44,6 +48,7 @@ dashboard retrospective display, and optional retrospective re-ranking.
 | 10 | Model/provider flexibility with safe key handling | `aafb9c4` |
 | 11 | Dashboard tab for the latest retrospective | `b072fc7` |
 | 12 | Optional model-assisted retrospective re-ranking | `7d647e6` |
+| 13 | Release hardening for v0.2.0 | pending |
 
 ## Next Phase
 
