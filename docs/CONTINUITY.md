@@ -24,7 +24,7 @@ weekly retrospectives, dashboard auto-refresh, and provider/model flexibility.
 
 ## Verification Baseline
 
-- `.venv/bin/python -m pytest`: 75 passing.
+- `.venv/bin/python -m pytest`: 78 passing.
 - `.venv/bin/ruff check .`: clean.
 - Use `.venv/bin/python -m pytest`; the system Python 3.14 may not have all
   project dependencies.
@@ -40,7 +40,7 @@ weekly retrospectives, dashboard auto-refresh, and provider/model flexibility.
 | 8 | Weekly retrospective command | `b0b6f4a` |
 | 9 | Dashboard auto-refresh | `cb41081` |
 | 10 | Model/provider flexibility with safe key handling | `aafb9c4` |
-| 11 | Dashboard tab for the latest retrospective | current session |
+| 11 | Dashboard tab for the latest retrospective | `b072fc7` |
 
 ## Next Phase
 

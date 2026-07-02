@@ -79,6 +79,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   linear backoff) and reuses a pooled `requests.Session` across all feeds.
 
 ### Changed
+- Refreshed the resume prompt and continuity/status verification baseline now
+  that Session 11 is shipped and the test suite contains 78 tests.
 - Compressed completed continuity docs into a final-state archive, updated the
   resume prompt for post-roadmap work, and refreshed architecture docs to cover
   the shipped cache, resolver, retrospective, and auto-refresh components.

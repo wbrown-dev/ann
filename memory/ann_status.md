@@ -24,7 +24,7 @@ Current state:
   continuity archive for post-roadmap work.
 
 Quality gate:
-- `.venv/bin/python -m pytest`: 75 passed.
+- `.venv/bin/python -m pytest`: 78 passed.
 - `.venv/bin/ruff check .`: clean.
 
 Open R&D:
