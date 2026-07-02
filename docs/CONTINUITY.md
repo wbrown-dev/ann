@@ -115,7 +115,7 @@ resolution is feasible before committing to full implementation.
 - [x] Tests: successful resolution, failure fallback, non-Google links pass
       through unchanged.
 
-**Status:** Done (commit `<pending>`). Spike was positive: the post-2024
+**Status:** Done (commit `5f0f4f6`). Spike was positive: the post-2024
 Google News scheme resolves via the article page's `data-n-a-{id,sg,ts}` tokens
 plus one `batchexecute` RPC. Shipped `ann_app/resolve.py`
 (`resolve_google_news_url` + `resolve_selection`), wired into `ann.py` after
