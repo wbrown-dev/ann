@@ -4,8 +4,16 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-ANTHROPIC_API_KEY = os.environ.get("ANTHROPIC_API_KEY")
-CLAUDE_MODEL = os.environ.get("ANN_MODEL", "claude-sonnet-5")
+MODEL_PROVIDER = os.environ.get("ANN_MODEL_PROVIDER", "anthropic").strip().lower()
+DEFAULT_MODEL_BY_PROVIDER = {
+    "anthropic": "claude-sonnet-5",
+    "openai": "gpt-4.1-mini",
+}
+MODEL_NAME = os.environ.get("ANN_MODEL") or DEFAULT_MODEL_BY_PROVIDER.get(
+    MODEL_PROVIDER,
+    DEFAULT_MODEL_BY_PROVIDER["anthropic"],
+)
+SUPPORTED_MODEL_PROVIDERS = tuple(DEFAULT_MODEL_BY_PROVIDER)
 
 HEADLINES_PER_OUTLET = 5
 
@@ -138,6 +146,19 @@ The digest intentionally avoids or deprioritizes:
 - Viral curiosities
 - Lifestyle filler
 """
+
+
+def resolve_model_settings(provider: str | None = None, model: str | None = None) -> tuple[str, str]:
+    resolved_provider = (provider or os.environ.get("ANN_MODEL_PROVIDER") or "anthropic").strip().lower()
+    if resolved_provider not in DEFAULT_MODEL_BY_PROVIDER:
+        supported = ", ".join(SUPPORTED_MODEL_PROVIDERS)
+        raise ValueError(f"unsupported model provider {resolved_provider!r}; choose one of: {supported}")
+
+    resolved_model = (model or os.environ.get("ANN_MODEL") or DEFAULT_MODEL_BY_PROVIDER[resolved_provider]).strip()
+    if not resolved_model:
+        raise ValueError("model name cannot be empty")
+
+    return resolved_provider, resolved_model
 
 REQUEST_TIMEOUT_SECONDS = 10
 USER_AGENT = "Mozilla/5.0 (compatible; ANN-digest/1.0)"

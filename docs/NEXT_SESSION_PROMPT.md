@@ -31,6 +31,6 @@ House rules:
 - Only modify files within ~/Desktop/development/ANN/.
 ```
 
-The original Sessions 4-9 roadmap is complete and archived in Git history.
-The current next-phase item is Session 10: model/provider flexibility with safe
-key handling.
+The original Sessions 4-10 roadmap is complete and archived in Git history.
+The current next-phase item is Session 11: dashboard tab for the latest
+retrospective.

@@ -3,15 +3,15 @@
 ## Prerequisites
 
 - Python 3.11 or 3.12
-- An `ANTHROPIC_API_KEY` (only needed to generate new digests; the dashboard
-  can run against an existing digest without one)
+- An API key for the selected model provider (only needed to generate new
+  digests; the dashboard can run against an existing digest without one)
 
 ## Setup
 
 ```bash
 python3 -m venv .venv
 .venv/bin/pip install -r requirements.txt
-cp .env.example .env        # add ANTHROPIC_API_KEY
+cp .env.example .env        # add ANTHROPIC_API_KEY or OPENAI_API_KEY
 ```
 
 ## Generating a digest
@@ -20,7 +20,20 @@ cp .env.example .env        # add ANTHROPIC_API_KEY
 .venv/bin/python ann.py run              # writes headlines-YYYY-MM-DD.md, updates README link
 .venv/bin/python ann.py run --dry-run    # prints the digest without writing anything
 .venv/bin/python ann.py run --within-hours 24
+.venv/bin/python ann.py run --model-provider openai --model gpt-4.1-mini
 ```
+
+## Model providers
+
+ANN supports Anthropic and OpenAI behind the same index-only selection
+interface. Configure the provider with `ANN_MODEL_PROVIDER` (`anthropic` or
+`openai`) and the model with `ANN_MODEL`, or pass `--model-provider` and
+`--model` to `ann.py run`. Defaults are Anthropic + `claude-sonnet-5`.
+
+Secrets are read only from environment variables or deployment secrets:
+`ANTHROPIC_API_KEY` for Anthropic and `OPENAI_API_KEY` for OpenAI. User-entered
+keys must not be written to disk, logs, generated digests, cache snapshots, or
+git. Missing keys fail before any digest is written.
 
 ## Running the dashboard
 
@@ -44,8 +57,8 @@ appears without restarting the Streamlit server.
 New behavior should ship with tests. `ann_app/fetch.py` is intentionally not
 unit-tested against the network; test the pure functions (`_parse_response`,
 `render_markdown`, `parse_digest`) instead. `filter.select_headlines` accepts an
-injectable `client`, so its selection/ranking/bounds logic is tested against a
-stubbed model rather than a live API call.
+injectable provider or SDK client, so its selection/ranking/bounds logic is
+tested against stubs rather than a live API call.
 
 ## Candidate caching
 
@@ -93,6 +106,8 @@ a new candidate outlet, extend `EXTRA_OUTLET_FEEDS` / `_DISPLAY_NAMES` /
 
 - Never run `source .env`; the app loads it via `python-dotenv`.
 - Never commit `.env` or print secrets in logs.
+- Never persist provider keys outside environment variables, deployment
+  secrets, or in-memory UI state.
 
 ## Weekly retrospective
 

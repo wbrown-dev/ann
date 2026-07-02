@@ -3,16 +3,16 @@ from __future__ import annotations
 import json
 import re
 from collections import defaultdict
-
-import anthropic
+from typing import Any
 
 from ann_app.config import (
-    ANTHROPIC_API_KEY,
-    CLAUDE_MODEL,
     HEADLINES_PER_OUTLET,
+    MODEL_NAME,
     SELECTION_STANDARD,
+    resolve_model_settings,
 )
 from ann_app.fetch import Candidate
+from ann_app.providers import ModelProvider, ProviderError, build_provider
 
 MAX_CANDIDATES_PER_OUTLET = 40
 
@@ -72,13 +72,33 @@ def _parse_response(text: str) -> dict[str, list[int]]:
             candidate = brace.group(0)
 
     try:
-        return json.loads(candidate)
+        parsed = json.loads(candidate)
     except json.JSONDecodeError as exc:
         raise FilterError(f"could not parse model response as JSON: {exc}\n{text}") from exc
 
+    return _validate_response(parsed)
+
+
+def _validate_response(parsed: Any) -> dict[str, list[int]]:
+    if not isinstance(parsed, dict):
+        raise FilterError("model response must be a JSON object mapping outlet names to index lists")
+
+    selections: dict[str, list[int]] = {}
+    for outlet, indices in parsed.items():
+        if not isinstance(outlet, str):
+            raise FilterError("model response outlet names must be strings")
+        if not isinstance(indices, list):
+            raise FilterError(f"model response for {outlet} must be a list of candidate indices")
+        selections[outlet] = indices
+
+    return selections
+
 
 def select_headlines(
-    candidates: list[Candidate], client: anthropic.Anthropic | None = None
+    candidates: list[Candidate],
+    client: object | None = None,
+    provider: str | ModelProvider | None = None,
+    model: str | None = None,
 ) -> dict[str, list[Candidate]]:
     grouped: dict[str, list[Candidate]] = defaultdict(list)
     for c in candidates:
@@ -87,19 +107,12 @@ def select_headlines(
     if not grouped:
         return {}
 
-    if client is None:
-        if not ANTHROPIC_API_KEY:
-            raise FilterError("ANTHROPIC_API_KEY is not set")
-        client = anthropic.Anthropic(api_key=ANTHROPIC_API_KEY)
-
     prompt = _build_prompt(grouped)
-
-    response = client.messages.create(
-        model=CLAUDE_MODEL,
-        max_tokens=1024,
-        messages=[{"role": "user", "content": prompt}],
-    )
-    text = "".join(block.text for block in response.content if block.type == "text")
+    model_provider, model_name = _resolve_provider(provider, model, client)
+    try:
+        text = model_provider.complete(prompt, model_name)
+    except ProviderError as exc:
+        raise FilterError(str(exc)) from exc
     selections = _parse_response(text)
 
     result: dict[str, list[Candidate]] = {}
@@ -112,3 +125,22 @@ def select_headlines(
         result[outlet] = chosen
 
     return result
+
+
+def _resolve_provider(
+    provider: str | ModelProvider | None,
+    model: str | None,
+    client: object | None,
+) -> tuple[ModelProvider, str]:
+    if provider is not None and not isinstance(provider, str):
+        model_name = (model or MODEL_NAME).strip()
+        if not model_name:
+            raise FilterError("model name cannot be empty")
+        return provider, model_name
+
+    try:
+        provider_name, model_name = resolve_model_settings(provider, model)
+    except ValueError as exc:
+        raise FilterError(str(exc)) from exc
+
+    return build_provider(provider_name, client=client), model_name

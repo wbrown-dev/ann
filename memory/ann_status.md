@@ -2,12 +2,12 @@
 
 Last updated: 2026-07-02
 
-Sessions 4-9 are shipped. Current implementation commit: `cb41081`
-(`feat: auto-refresh dashboard digest`).
-Documentation finalization is captured in the latest docs commit.
+Sessions 4-10 are shipped. Session 10 added model/provider flexibility with
+safe key handling. Documentation finalization is captured in the latest docs
+commit.
 
 Current state:
-- Daily digest pipeline is complete: fetch -> Claude index-only filter ->
+- Daily digest pipeline is complete: fetch -> provider index-only filter ->
   render -> latest Markdown digest -> Streamlit dashboard.
 - GitHub Actions can run the daily digest on schedule or manual dispatch.
 - Selected AP Google News links resolve best-effort to canonical publisher URLs.
@@ -17,16 +17,17 @@ Current state:
   digests.
 - The dashboard auto-checks for a changed latest digest every 30 seconds and
   reruns when the filename or mtime changes.
-- The completed Sessions 4-9 roadmap has been compressed into a final-state
+- `ANN_MODEL_PROVIDER` / `--model-provider` can select Anthropic or OpenAI;
+  `ANN_MODEL` / `--model` selects the model. Keys remain env/deployment secret
+  only (`ANTHROPIC_API_KEY` or `OPENAI_API_KEY`) and are never persisted.
+- The completed Sessions 4-10 roadmap has been compressed into a final-state
   continuity archive for post-roadmap work.
 
 Quality gate:
-- `.venv/bin/python -m pytest`: 62 passed.
+- `.venv/bin/python -m pytest`: 75 passed.
 - `.venv/bin/ruff check .`: clean.
 
 Open R&D:
-- Session 10: model/provider flexibility with safe key handling. Start with
-  Anthropic and OpenAI behind one index-only interface; never persist
-  user-entered keys.
+- Session 11: dashboard tab for the latest retrospective.
 - Optional model-assisted retrospective re-ranking, index-only.
-- Dashboard tab for the latest retrospective.
+- Additional providers behind the same normalized index-only interface.

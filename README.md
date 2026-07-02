@@ -14,10 +14,10 @@ afraid of missing something truly important.
 > inherently prone to focusing on outlier events, sensational content, and
 > outrage. It's entertainment posing as information. You don't need to follow it.
 
-ANN fetches candidate headlines from major outlets, asks Claude to keep only the
-five per outlet most likely to **still matter in 30 days** — significance, not
-virality — and writes a small Markdown digest. A Streamlit dashboard then puts
-those headlines on a calm, rotating display.
+ANN fetches candidate headlines from major outlets, asks the configured model
+provider to keep only the five per outlet most likely to **still matter in 30
+days** — significance, not virality — and writes a small Markdown digest. A
+Streamlit dashboard then puts those headlines on a calm, rotating display.
 
 ## Attribution
 
@@ -50,11 +50,15 @@ confirmed, the digest carries a cross-verified summary with no link.
 ```bash
 python3 -m venv .venv
 .venv/bin/pip install -r requirements.txt
-cp .env.example .env          # add your ANTHROPIC_API_KEY
+cp .env.example .env          # add your provider API key
 
 .venv/bin/python ann.py run   # generate today's digest
 .venv/bin/streamlit run streamlit_app.py   # open the dashboard on :8501
 ```
+
+By default ANN uses Anthropic (`ANTHROPIC_API_KEY`). To use OpenAI instead, set
+`OPENAI_API_KEY` and run with `ANN_MODEL_PROVIDER=openai`, or pass
+`--model-provider openai --model <model-name>`.
 
 ## The dashboard
 

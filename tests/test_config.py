@@ -1,5 +1,6 @@
 from ann_app.config import (
     DEFAULT_OUTLET_FEEDS,
+    resolve_model_settings,
     resolve_outlet_config,
 )
 
@@ -53,3 +54,29 @@ def test_resolver_does_not_mutate_default_feeds():
     feeds["WSJ"].append("https://example.com/injected")
 
     assert "https://example.com/injected" not in DEFAULT_OUTLET_FEEDS["WSJ"]
+
+
+def test_resolve_model_settings_defaults_to_anthropic(monkeypatch):
+    monkeypatch.delenv("ANN_MODEL_PROVIDER", raising=False)
+    monkeypatch.delenv("ANN_MODEL", raising=False)
+
+    provider, model = resolve_model_settings()
+
+    assert provider == "anthropic"
+    assert model == "claude-sonnet-5"
+
+
+def test_resolve_model_settings_accepts_openai():
+    provider, model = resolve_model_settings("openai", "gpt-test")
+
+    assert provider == "openai"
+    assert model == "gpt-test"
+
+
+def test_resolve_model_settings_rejects_unknown_provider():
+    try:
+        resolve_model_settings("local", "model")
+    except ValueError as exc:
+        assert "unsupported model provider" in str(exc)
+    else:
+        raise AssertionError("expected ValueError")

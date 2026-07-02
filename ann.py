@@ -6,6 +6,7 @@ import sys
 from datetime import date
 
 from ann_app.cache import CacheError, load_candidates, save_candidates
+from ann_app.config import SUPPORTED_MODEL_PROVIDERS, resolve_model_settings
 from ann_app.fetch import fetch_all
 from ann_app.filter import FilterError, select_headlines
 from ann_app.render import render_markdown, update_readme_link
@@ -26,6 +27,8 @@ def run(
     within_hours: int,
     use_cache: bool = False,
     save_cache: bool = False,
+    model_provider: str | None = None,
+    model: str | None = None,
 ) -> int:
     if use_cache:
         try:
@@ -47,9 +50,22 @@ def run(
             path = save_candidates(candidates, target_date)
             print(f"Saved candidate cache to {path}")
 
-    print("Selecting headlines against the significance standard...")
     try:
-        selections = select_headlines(candidates)
+        resolved_provider, resolved_model = resolve_model_settings(model_provider, model)
+    except ValueError as exc:
+        print(f"error: {exc}", file=sys.stderr)
+        return 1
+
+    print(
+        "Selecting headlines against the significance standard "
+        f"with {resolved_provider}:{resolved_model}..."
+    )
+    try:
+        selections = select_headlines(
+            candidates,
+            provider=resolved_provider,
+            model=resolved_model,
+        )
     except FilterError as exc:
         print(f"error: {exc}", file=sys.stderr)
         return 1
@@ -138,6 +154,17 @@ def main() -> int:
         default=36,
         help="Only consider candidate headlines published within this many hours (default: 36).",
     )
+    run_parser.add_argument(
+        "--model-provider",
+        choices=SUPPORTED_MODEL_PROVIDERS,
+        default=None,
+        help="Model provider to use for index selection (default: ANN_MODEL_PROVIDER or anthropic).",
+    )
+    run_parser.add_argument(
+        "--model",
+        default=None,
+        help="Model name to use for index selection (default: ANN_MODEL or provider default).",
+    )
     cache_group = run_parser.add_mutually_exclusive_group()
     cache_group.add_argument(
         "--save-cache",
@@ -181,6 +208,8 @@ def main() -> int:
             args.within_hours,
             use_cache=args.use_cache,
             save_cache=args.save_cache,
+            model_provider=args.model_provider,
+            model=args.model,
         )
 
     if args.command == "retro":

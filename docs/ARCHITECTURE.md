@@ -4,7 +4,7 @@ ANN is a small pipeline plus two front-ends (CLI and Streamlit dashboard) over
 the same core package, `ann_app`.
 
 ```
-RSS / Google News -> fetch/cache -> Claude index selection -> resolve AP URLs
+RSS / Google News -> fetch/cache -> provider index selection -> resolve AP URLs
                                       │
                                       ▼
                           render headlines-YYYY-MM-DD.md
@@ -19,10 +19,11 @@ RSS / Google News -> fetch/cache -> Claude index selection -> resolve AP URLs
 
 | Module | Responsibility |
 | --- | --- |
-| `ann_app/config.py` | Outlet feeds, display names, accents, selection standard, model settings. |
+| `ann_app/config.py` | Outlet feeds, display names, accents, selection standard, model/provider settings. |
 | `ann_app/fetch.py` | Pull and de-duplicate candidate headlines within a lookback window. |
 | `ann_app/cache.py` | Save/load versioned candidate snapshots for offline replay. |
-| `ann_app/filter.py` | Ask Claude to rank by candidate index only, so titles and links are never fabricated. |
+| `ann_app/providers.py` | Normalize Anthropic/OpenAI SDK calls behind a text-completion interface. |
+| `ann_app/filter.py` | Ask the selected provider to rank by candidate index only, then validate and bounds-check the returned indices. |
 | `ann_app/resolve.py` | Best-effort resolution of selected AP Google News links to canonical publisher URLs. |
 | `ann_app/render.py` | Render selections to daily Markdown and update the README link. |
 | `ann_app/parse.py` | Parse digest Markdown into typed sections/headlines and locate the latest digest. |
@@ -43,6 +44,21 @@ looked up from the fetched `Candidate` list, so the digest can never contain a
 headline or link the model invented. Where a source URL cannot be confirmed,
 the digest carries a cross-verified summary with no link, and the parser marks
 it as `link = None`.
+
+## Model Providers
+
+`ann.py run` resolves `ANN_MODEL_PROVIDER` / `ANN_MODEL` or the CLI flags
+`--model-provider` / `--model`, then passes that choice into
+`filter.select_headlines`. `ann_app/providers.py` owns provider-specific SDK
+shape differences:
+
+- Anthropic uses `ANTHROPIC_API_KEY` and `messages.create`.
+- OpenAI uses `OPENAI_API_KEY` and the Responses API.
+
+Provider adapters return raw text only. `filter._parse_response` remains the
+single validation gate: the response must be a JSON object mapping outlet names
+to lists, and only in-range integer indices are converted back into real
+`Candidate` objects.
 
 ## Streamlit dashboard
 

@@ -8,6 +8,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- Model/provider flexibility for daily headline selection. `ANN_MODEL_PROVIDER`
+  or `ann.py run --model-provider` can select `anthropic` or `openai`, with
+  `ANN_MODEL` / `--model` controlling the model name. Provider-specific SDK
+  calls live behind `ann_app/providers.py`, while `filter.select_headlines`
+  still accepts only normalized model text and resolves selections back to
+  candidate indices. Missing keys and malformed provider JSON fail clearly
+  before writing a digest; tests use stub clients only.
 - The Streamlit dashboard now auto-checks the latest `headlines-*.md` digest
   every 30 seconds using a timed fragment. It tracks both filename and mtime, so
   a newly generated digest or an overwritten current-day digest is reflected

@@ -1,12 +1,12 @@
 # Continuity
 
-ANN's original roadmap is complete. Sessions 4-9 shipped the production
+ANN's original roadmap is complete. Sessions 4-10 shipped the production
 workflow, URL quality improvements, deterministic replay, optional outlets,
-weekly retrospectives, and dashboard auto-refresh.
+weekly retrospectives, dashboard auto-refresh, and provider/model flexibility.
 
 ## Current State
 
-- Core pipeline: fetch candidates -> Claude index-only selection -> render
+- Core pipeline: fetch candidates -> provider index-only selection -> render
   `headlines-YYYY-MM-DD.md` -> Streamlit dashboard.
 - Automation: GitHub Actions runs the daily digest on schedule or manual
   dispatch and commits generated digest files safely.
@@ -18,10 +18,12 @@ weekly retrospectives, and dashboard auto-refresh.
 - Retrospective: `ann.py retro` builds a deterministic weekly digest from prior
   daily digests.
 - Dashboard: auto-checks for new or overwritten digest files every 30 seconds.
+- Providers: Anthropic and OpenAI can be selected through env/config or CLI
+  flags while preserving index-only selection and env-only key handling.
 
 ## Verification Baseline
 
-- `.venv/bin/python -m pytest`: 62 passing.
+- `.venv/bin/python -m pytest`: 75 passing.
 - `.venv/bin/ruff check .`: clean.
 - Use `.venv/bin/python -m pytest`; the system Python 3.14 may not have all
   project dependencies.
@@ -36,27 +38,13 @@ weekly retrospectives, and dashboard auto-refresh.
 | 7 | Optional extra outlets | `b72201c` |
 | 8 | Weekly retrospective command | `b0b6f4a` |
 | 9 | Dashboard auto-refresh | `cb41081` |
+| 10 | Model/provider flexibility with safe key handling | current session |
 
 ## Next Phase
 
 | ID | Priority | Goal |
 | --- | --- | --- |
-| 10 | P1 | Model/provider flexibility with safe key handling. |
-
-Session 10 should let users select among popular API-key-backed model
-providers without weakening ANN's no-fabrication guarantee. Start with a small
-provider abstraction around `filter.select_headlines`, then add adapters for
-Anthropic and OpenAI before considering Google or local providers. Keep keys in
-environment variables, platform secrets, or in-memory Streamlit session state
-only; never write user-entered keys to disk, logs, generated digests, cache
-files, or git.
-
-Acceptance criteria:
-- Provider/model can be selected through CLI/config without changing source.
-- At least Anthropic and OpenAI are supported behind one normalized interface.
-- All provider responses still resolve to candidate indices only.
-- Missing keys and malformed provider output fail clearly and safely.
-- Tests use stubbed clients; no live API calls.
+| 11 | P2 | Dashboard tab for the latest retrospective. |
 
 ## Invariants
 
@@ -71,7 +59,7 @@ Acceptance criteria:
 
 ## Open Ideas
 
-- Model/provider flexibility with safe key entry and storage boundaries
-  (promoted to Session 10).
 - Optional model-assisted retrospective re-ranking, still index-only.
 - Dashboard tab for the latest retrospective.
+- Consider additional providers only behind the same normalized index-only
+  interface and env/in-memory key boundaries.

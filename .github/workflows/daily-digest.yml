@@ -31,7 +31,10 @@ jobs:
 
       - name: Generate today's digest
         env:
+          ANN_MODEL_PROVIDER: ${{ vars.ANN_MODEL_PROVIDER }}
+          ANN_MODEL: ${{ vars.ANN_MODEL }}
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
         run: python ann.py run
 
       - name: Commit and push digest

@@ -34,10 +34,14 @@ The digest is generated automatically by
 
 ### Required secret
 
-The workflow needs `ANTHROPIC_API_KEY` as a repository Actions secret
-(Settings -> Secrets and variables -> Actions -> New repository secret). It is
-injected into the generate step via `env:` and masked by GitHub in logs; it is
-never committed and never printed by `ann.py`.
+The workflow needs the API key for the selected provider as a repository
+Actions secret (Settings -> Secrets and variables -> Actions -> New repository
+secret): `ANTHROPIC_API_KEY` for the default Anthropic provider, or
+`OPENAI_API_KEY` when `ANN_MODEL_PROVIDER=openai`. Optional repository
+variables `ANN_MODEL_PROVIDER` and `ANN_MODEL` can switch provider/model without
+editing source. Secrets are injected into the generate step via `env:` and
+masked by GitHub in logs; they are never committed and never printed by
+`ann.py`.
 
 ### Local alternative (launchd)
 
@@ -62,6 +66,16 @@ docker build -t ann:latest .
 docker run --rm -p 8501:8501 -e ANTHROPIC_API_KEY=sk-... ann:latest
 ```
 
+For OpenAI:
+
+```bash
+docker run --rm -p 8501:8501 \
+  -e ANN_MODEL_PROVIDER=openai \
+  -e ANN_MODEL=gpt-4.1-mini \
+  -e OPENAI_API_KEY=sk-... \
+  ann:latest
+```
+
 Or with Compose (mounts the working tree so freshly generated digests appear):
 
 ```bash
@@ -79,7 +93,8 @@ docker compose run --rm ann python ann.py run
 
 ## Secrets
 
-- The only secret is `ANTHROPIC_API_KEY`, injected via environment variable.
+- Provider secrets are `ANTHROPIC_API_KEY` and/or `OPENAI_API_KEY`, injected via
+  environment variables.
 - Never bake secrets into the image; `.env` is git-ignored and excluded from the
   build context via `.dockerignore`.
 

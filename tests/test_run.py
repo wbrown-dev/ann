@@ -21,7 +21,7 @@ def test_run_writes_digest_and_updates_readme(tmp_path, monkeypatch):
     monkeypatch.setattr(
         ann,
         "select_headlines",
-        lambda candidates: {"WSJ": candidates, "NYT": [], "NBC": [], "AP": []},
+        lambda candidates, **kwargs: {"WSJ": candidates, "NYT": [], "NBC": [], "AP": []},
     )
 
     rc = ann.run(date(2026, 7, 2), dry_run=False, within_hours=36)
@@ -39,7 +39,7 @@ def test_run_refuses_empty_digest(tmp_path, monkeypatch):
     monkeypatch.setattr(
         ann,
         "select_headlines",
-        lambda candidates: {"WSJ": [], "NYT": [], "NBC": [], "AP": []},
+        lambda candidates, **kwargs: {"WSJ": [], "NYT": [], "NBC": [], "AP": []},
     )
 
     rc = ann.run(date(2026, 7, 2), dry_run=False, within_hours=36)
@@ -69,7 +69,7 @@ def test_run_use_cache_skips_fetch(tmp_path, monkeypatch):
     monkeypatch.setattr(
         ann,
         "select_headlines",
-        lambda candidates: {"WSJ": candidates, "NYT": [], "NBC": [], "AP": []},
+        lambda candidates, **kwargs: {"WSJ": candidates, "NYT": [], "NBC": [], "AP": []},
     )
 
     rc = ann.run(target, dry_run=False, within_hours=36, use_cache=True)
@@ -78,3 +78,27 @@ def test_run_use_cache_skips_fetch(tmp_path, monkeypatch):
     digest = tmp_path / "headlines-2026-07-02.md"
     assert digest.exists()
     assert "Cached Story" in digest.read_text(encoding="utf-8")
+
+
+def test_run_passes_model_provider_and_model(tmp_path, monkeypatch):
+    seen = {}
+
+    monkeypatch.setattr(ann, "REPO_ROOT", str(tmp_path))
+    monkeypatch.setattr(ann, "fetch_all", lambda within_hours: _fetch_result())
+
+    def _select(candidates, **kwargs):
+        seen.update(kwargs)
+        return {"WSJ": candidates, "NYT": [], "NBC": [], "AP": []}
+
+    monkeypatch.setattr(ann, "select_headlines", _select)
+
+    rc = ann.run(
+        date(2026, 7, 2),
+        dry_run=True,
+        within_hours=36,
+        model_provider="openai",
+        model="gpt-test",
+    )
+
+    assert rc == 0
+    assert seen == {"provider": "openai", "model": "gpt-test"}

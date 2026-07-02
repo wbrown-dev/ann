@@ -95,3 +95,35 @@ def test_parse_response_bare_object_in_prose():
 def test_parse_response_invalid_raises():
     with pytest.raises(FilterError):
         _parse_response("not json")
+
+
+def test_parse_response_non_object_raises():
+    with pytest.raises(FilterError, match="JSON object"):
+        _parse_response("[0, 1]")
+
+
+def test_parse_response_non_list_outlet_value_raises():
+    with pytest.raises(FilterError, match="WSJ"):
+        _parse_response('{"WSJ": 1}')
+
+
+class StubProvider:
+    name = "anthropic"
+
+    def __init__(self, response_text):
+        self._response_text = response_text
+        self.calls = []
+
+    def complete(self, prompt, model):
+        self.calls.append({"prompt": prompt, "model": model})
+        return self._response_text
+
+
+def test_select_headlines_accepts_normalized_provider():
+    candidates = _wsj(3)
+    provider = StubProvider('{"WSJ": [1]}')
+
+    result = select_headlines(candidates, provider=provider, model="stub-model")
+
+    assert [c.title for c in result["WSJ"]] == ["WSJ 1"]
+    assert provider.calls[0]["model"] == "stub-model"
