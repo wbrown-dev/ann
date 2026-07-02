@@ -2,9 +2,8 @@
 
 Last updated: 2026-07-02
 
-Sessions 4-10 are shipped. Session 10 added model/provider flexibility with
-safe key handling. Documentation finalization is captured in the latest docs
-commit.
+Sessions 4-11 are shipped. Session 11 added a Streamlit dashboard tab for the
+latest weekly retrospective alongside the daily headline rotation.
 
 Current state:
 - Daily digest pipeline is complete: fetch -> provider index-only filter ->
@@ -15,8 +14,9 @@ Current state:
 - Optional extra outlets are available via `ANN_EXTRA_OUTLETS`.
 - `ann.py retro` builds a deterministic weekly retrospective from prior
   digests.
-- The dashboard auto-checks for a changed latest digest every 30 seconds and
-  reruns when the filename or mtime changes.
+- The dashboard has daily digest and weekly retrospective tabs, auto-checks the
+  latest generated files every 30 seconds, and reruns when filename or mtime
+  changes.
 - `ANN_MODEL_PROVIDER` / `--model-provider` can select Anthropic or OpenAI;
   `ANN_MODEL` / `--model` selects the model. Keys remain env/deployment secret
   only (`ANTHROPIC_API_KEY` or `OPENAI_API_KEY`) and are never persisted.
@@ -28,6 +28,5 @@ Quality gate:
 - `.venv/bin/ruff check .`: clean.
 
 Open R&D:
-- Session 11: dashboard tab for the latest retrospective.
 - Optional model-assisted retrospective re-ranking, index-only.
 - Additional providers behind the same normalized index-only interface.

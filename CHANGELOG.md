@@ -8,6 +8,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- The Streamlit dashboard now has separate tabs for the daily headline rotation
+  and the latest `retrospective-*.md` weekly retrospective. The dashboard
+  auto-checks both file families for filename or mtime changes, and
+  retrospective parsing preserves the generated verbatim headline text,
+  metadata, dates, and source links without rewriting story content.
 - Model/provider flexibility for daily headline selection. `ANN_MODEL_PROVIDER`
   or `ann.py run --model-provider` can select `anthropic` or `openai`, with
   `ANN_MODEL` / `--model` controlling the model name. Provider-specific SDK

@@ -26,7 +26,7 @@ RSS / Google News -> fetch/cache -> provider index selection -> resolve AP URLs
 | `ann_app/filter.py` | Ask the selected provider to rank by candidate index only, then validate and bounds-check the returned indices. |
 | `ann_app/resolve.py` | Best-effort resolution of selected AP Google News links to canonical publisher URLs. |
 | `ann_app/render.py` | Render selections to daily Markdown and update the README link. |
-| `ann_app/parse.py` | Parse digest Markdown into typed sections/headlines and locate the latest digest. |
+| `ann_app/parse.py` | Parse daily digest and weekly retrospective Markdown into typed objects, and locate the latest generated files. |
 | `ann_app/retrospective.py` | Build deterministic weekly retrospectives from prior daily digests. |
 | `ann.py` | CLI entry point for `run` and `retro`. |
 | `streamlit_app.py` | Rotating dashboard that auto-detects changed digest files. |
@@ -62,8 +62,9 @@ to lists, and only in-range integer indices are converted back into real
 
 ## Streamlit dashboard
 
-`streamlit_app.py` loads the latest digest, flattens all headlines across
-outlets, and hands them to a self-contained HTML/JS component:
+`streamlit_app.py` loads the latest daily digest and latest weekly retrospective
+into two tabs. The daily tab flattens all headlines across outlets and hands
+them to a self-contained HTML/JS component:
 
 - The component **shuffles** the full set and shows one headline at a time.
 - Each headline is displayed for **10 seconds** (a progress bar tracks the
@@ -72,5 +73,8 @@ outlets, and hands them to a self-contained HTML/JS component:
   exhausted the component reshuffles and continues.
 - Each outlet has an accent color (WSJ cyan, NYT blue, NBC indigo, AP magenta)
   matching the dark "ANN" visual system.
-- A timed Streamlit fragment checks the latest digest filename and mtime every
-  30 seconds and reruns when a new or overwritten digest appears.
+- The weekly retrospective tab displays the newest `retrospective-*.md` file,
+  preserving generated titles, links, recurrence metadata, and date lines.
+- A timed Streamlit fragment checks the latest daily digest and retrospective
+  filenames and mtimes every 30 seconds, then reruns when new or overwritten
+  generated content appears.

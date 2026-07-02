@@ -65,7 +65,10 @@ By default ANN uses Anthropic (`ANTHROPIC_API_KEY`). To use OpenAI instead, set
 The Streamlit app (dark "ANN" visual system) rotates through **every** headline
 in the latest digest in the main window — **10 seconds each, with no repeats
 until all have been shown**, then reshuffles. Each outlet has its own accent
-color, and the full digest is listed below the rotating hero.
+color, and the full digest is listed below the rotating hero. A separate weekly
+retrospective tab shows the latest `retrospective-*.md` file from
+`ann.py retro`. The dashboard checks for updated daily and retrospective files
+every 30 seconds.
 
 ## Run with Docker
 

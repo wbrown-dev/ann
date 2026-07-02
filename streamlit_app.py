@@ -11,8 +11,11 @@ from ann_app.config import OUTLET_ACCENTS
 from ann_app.parse import (
     find_latest_digest,
     find_latest_digest_state,
+    find_latest_retrospective,
+    find_latest_retrospective_state,
     flatten_headlines,
     parse_digest,
+    parse_retrospective,
 )
 
 REPO_ROOT = os.path.dirname(os.path.abspath(__file__))
@@ -20,7 +23,7 @@ ROTATION_SECONDS = 10
 REFRESH_POLL_SECONDS = 30
 
 DEFAULT_ACCENT = "#4dd0e1"
-DIGEST_STATE_KEY = "ann_digest_state"
+CONTENT_STATE_KEY = "ann_content_state"
 
 
 def _safe_url(link: str | None) -> str | None:
@@ -108,6 +111,21 @@ h1, h2, h3, h4 {
 .ann-item a { color: var(--ann-text); text-decoration: none; }
 .ann-item a:hover { text-decoration: underline; }
 .ann-item.no-link { color: var(--ann-text-soft); }
+.ann-retro-card {
+  background: var(--ann-panel);
+  border: 1px solid var(--ann-border);
+  border-radius: 16px;
+  padding: 18px 20px;
+  margin-bottom: 14px;
+}
+.ann-retro-meta {
+  color: var(--ann-text-soft);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.8rem;
+  margin-top: 8px;
+}
+.ann-retro-card a { color: var(--ann-text); text-decoration: none; }
+.ann-retro-card a:hover { text-decoration: underline; }
 
 ::-webkit-scrollbar { width: 9px; height: 9px; }
 ::-webkit-scrollbar-track { background: rgba(15, 23, 42, 0.7); }
@@ -332,6 +350,37 @@ def _render_digest(sections) -> None:
         cols[i % 2].markdown(card, unsafe_allow_html=True)
 
 
+def _render_retrospective(retrospective) -> None:
+    if retrospective.intro:
+        st.caption(retrospective.intro)
+
+    if not retrospective.items:
+        st.info("The latest retrospective contains no parseable stories.")
+        return
+
+    for item in retrospective.items:
+        title = html.escape(item.title)
+        link = _safe_url(item.link)
+        if link:
+            body = (
+                f'<a href="{html.escape(link, quote=True)}" '
+                f'target="_blank" rel="noopener">{title}</a>'
+            )
+        else:
+            body = title
+        dates = f"<br>{html.escape(item.dates)}" if item.dates else ""
+        card = (
+            '<div class="ann-retro-card">'
+            f'<div class="ann-item"><span class="ann-rank">{item.rank:02d}</span>{body}</div>'
+            f'<div class="ann-retro-meta">{html.escape(item.meta)}{dates}</div>'
+            "</div>"
+        )
+        st.markdown(card, unsafe_allow_html=True)
+
+    if retrospective.note:
+        st.caption(retrospective.note)
+
+
 def _digest_signature(repo_root: str) -> tuple[str, int] | None:
     state = find_latest_digest_state(repo_root)
     if state is None:
@@ -339,19 +388,31 @@ def _digest_signature(repo_root: str) -> tuple[str, int] | None:
     return (os.path.basename(state.path), state.mtime_ns)
 
 
+def _retrospective_signature(repo_root: str) -> tuple[str, int] | None:
+    state = find_latest_retrospective_state(repo_root)
+    if state is None:
+        return None
+    return (os.path.basename(state.path), state.mtime_ns)
+
+
+def _content_signature(repo_root: str) -> tuple[tuple[str, int] | None, tuple[str, int] | None]:
+    return (_digest_signature(repo_root), _retrospective_signature(repo_root))
+
+
 @st.fragment(run_every=f"{REFRESH_POLL_SECONDS}s")
-def _watch_latest_digest(repo_root: str) -> None:
-    current = _digest_signature(repo_root)
-    if st.session_state.get(DIGEST_STATE_KEY) == current:
+def _watch_latest_content(repo_root: str) -> None:
+    current = _content_signature(repo_root)
+    if st.session_state.get(CONTENT_STATE_KEY) == current:
         return
-    st.session_state[DIGEST_STATE_KEY] = current
+    st.session_state[CONTENT_STATE_KEY] = current
     st.rerun()
 
 
 def main() -> None:
     latest = find_latest_digest(REPO_ROOT)
-    st.session_state[DIGEST_STATE_KEY] = _digest_signature(REPO_ROOT)
-    _watch_latest_digest(REPO_ROOT)
+    latest_retrospective = find_latest_retrospective(REPO_ROOT)
+    st.session_state[CONTENT_STATE_KEY] = _content_signature(REPO_ROOT)
+    _watch_latest_content(REPO_ROOT)
 
     with st.sidebar:
         st.markdown('<div class="ann-kicker">All the news you need</div>', unsafe_allow_html=True)
@@ -360,8 +421,11 @@ def main() -> None:
         st.divider()
         if latest:
             st.markdown(f"**Digest:** `{os.path.basename(latest)}`")
-            st.caption(f"Auto-checking for a new digest every {REFRESH_POLL_SECONDS} seconds.")
-        if st.button("Refresh digest", use_container_width=True):
+        if latest_retrospective:
+            st.markdown(f"**Retrospective:** `{os.path.basename(latest_retrospective)}`")
+        if latest or latest_retrospective:
+            st.caption(f"Auto-checking for updated files every {REFRESH_POLL_SECONDS} seconds.")
+        if st.button("Refresh", use_container_width=True):
             st.rerun()
         st.divider()
         st.markdown('<div class="ann-kicker">Outlets</div>', unsafe_allow_html=True)
@@ -373,28 +437,40 @@ def main() -> None:
                 unsafe_allow_html=True,
             )
 
-    st.markdown('<div class="ann-kicker">Headline rotation · 10s each</div>', unsafe_allow_html=True)
     st.markdown("# All the News You Need")
 
-    if not latest:
-        st.warning("No digest found. Run `python ann.py run` to generate today's headlines.")
-        return
+    daily_tab, retro_tab = st.tabs(["Daily digest", "Weekly retrospective"])
 
-    with open(latest, encoding="utf-8") as f:
-        sections = parse_digest(f.read())
+    with daily_tab:
+        st.markdown('<div class="ann-kicker">Headline rotation · 10s each</div>', unsafe_allow_html=True)
+        if not latest:
+            st.warning("No digest found. Run `python ann.py run` to generate today's headlines.")
+        else:
+            with open(latest, encoding="utf-8") as f:
+                sections = parse_digest(f.read())
 
-    headlines = [
-        {"outlet": h.outlet, "rank": h.rank, "title": h.title, "link": h.link}
-        for h in flatten_headlines(sections)
-    ]
+            headlines = [
+                {"outlet": h.outlet, "rank": h.rank, "title": h.title, "link": h.link}
+                for h in flatten_headlines(sections)
+            ]
 
-    if headlines:
-        components.html(_rotation_component(headlines, OUTLET_ACCENTS), height=320)
-    else:
-        st.info("The latest digest contains no parseable headlines.")
+            if headlines:
+                components.html(_rotation_component(headlines, OUTLET_ACCENTS), height=320)
+            else:
+                st.info("The latest digest contains no parseable headlines.")
 
-    st.markdown("### Full digest")
-    _render_digest(sections)
+            st.markdown("### Full digest")
+            _render_digest(sections)
+
+    with retro_tab:
+        st.markdown('<div class="ann-kicker">What still mattered</div>', unsafe_allow_html=True)
+        if not latest_retrospective:
+            st.warning("No retrospective found. Run `python ann.py retro` after at least two daily digests.")
+        else:
+            with open(latest_retrospective, encoding="utf-8") as f:
+                retrospective = parse_retrospective(f.read())
+            st.markdown(f"### {retrospective.title or os.path.basename(latest_retrospective)}")
+            _render_retrospective(retrospective)
 
 
 if __name__ == "__main__":

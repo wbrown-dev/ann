@@ -17,7 +17,8 @@ weekly retrospectives, dashboard auto-refresh, and provider/model flexibility.
   `ANN_EXTRA_OUTLETS`.
 - Retrospective: `ann.py retro` builds a deterministic weekly digest from prior
   daily digests.
-- Dashboard: auto-checks for new or overwritten digest files every 30 seconds.
+- Dashboard: daily digest and weekly retrospective tabs auto-check for new or
+  overwritten generated files every 30 seconds.
 - Providers: Anthropic and OpenAI can be selected through env/config or CLI
   flags while preserving index-only selection and env-only key handling.
 
@@ -38,13 +39,14 @@ weekly retrospectives, dashboard auto-refresh, and provider/model flexibility.
 | 7 | Optional extra outlets | `b72201c` |
 | 8 | Weekly retrospective command | `b0b6f4a` |
 | 9 | Dashboard auto-refresh | `cb41081` |
-| 10 | Model/provider flexibility with safe key handling | current session |
+| 10 | Model/provider flexibility with safe key handling | `aafb9c4` |
+| 11 | Dashboard tab for the latest retrospective | current session |
 
 ## Next Phase
 
 | ID | Priority | Goal |
 | --- | --- | --- |
-| 11 | P2 | Dashboard tab for the latest retrospective. |
+| 12 | P3 | Optional model-assisted retrospective re-ranking, index-only. |
 
 ## Invariants
 
@@ -60,6 +62,5 @@ weekly retrospectives, dashboard auto-refresh, and provider/model flexibility.
 ## Open Ideas
 
 - Optional model-assisted retrospective re-ranking, still index-only.
-- Dashboard tab for the latest retrospective.
 - Consider additional providers only behind the same normalized index-only
   interface and env/in-memory key boundaries.
