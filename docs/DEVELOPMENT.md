@@ -91,8 +91,30 @@ a new candidate outlet, extend `EXTRA_OUTLET_FEEDS` / `_DISPLAY_NAMES` /
 - Never run `source .env`; the app loads it via `python-dotenv`.
 - Never commit `.env` or print secrets in logs.
 
+## Weekly retrospective
+
+`ann.py retro` builds a weekly "what still mattered" digest from the recent
+daily `headlines-YYYY-MM-DD.md` files:
+
+```bash
+.venv/bin/python ann.py retro           # writes retrospective-YYYY-Www.md
+.venv/bin/python ann.py retro --dry-run # print without writing
+.venv/bin/python ann.py retro --days 7 --top 10
+```
+
+It parses the last `--days` digests (windowed off the newest available digest,
+not the calendar date), clusters headlines into stories by salient-token
+overlap (reusing `fetch._normalize_title`), and ranks them by how many distinct
+days each story appeared, then by best daily rank. Ranking is a pure heuristic
+— no model call — so it is deterministic and offline. Every line is a verbatim
+headline carried from a real prior digest, preserving the no-fabrication
+guarantee. The command refuses (exit 2) if fewer than two recent digests exist
+or no stories are found.
+
 ## R&D notes
 
 Areas open for exploration:
 
-- A weekly "what still mattered" retrospective built from past digests.
+- Optional model-assisted re-ranking of the retrospective (index-only, to keep
+  the no-fabrication guarantee).
+- A dashboard tab surfacing the latest retrospective alongside the daily digest.

@@ -8,6 +8,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- `ann_app/retrospective.py` + `ann.py retro` — a weekly "what still mattered"
+  digest built from the recent daily `headlines-YYYY-MM-DD.md` files. Headlines
+  are clustered into stories by salient-token overlap (reusing
+  `fetch._normalize_title`) and ranked by how many distinct days each story
+  appeared, then by best daily rank — a pure, deterministic, offline heuristic
+  (no model call). Writes `retrospective-YYYY-Www.md` (ISO year-week of the
+  newest digest); `--days`, `--top`, and `--dry-run` flags. Every line is a
+  verbatim headline carried from a real prior digest (no fabrication); the
+  command refuses to write with fewer than two recent digests or no stories.
 - Optional extra outlets behind a config flag. `ANN_EXTRA_OUTLETS` (comma-
   separated, case-insensitive) enables any of `GUARDIAN`, `BBC`, `NPR` on top of
   the default four (WSJ/NYT/NBC/AP); unknown names are ignored. Each extra has a

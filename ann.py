@@ -10,6 +10,12 @@ from ann_app.fetch import fetch_all
 from ann_app.filter import FilterError, select_headlines
 from ann_app.render import render_markdown, update_readme_link
 from ann_app.resolve import resolve_selection
+from ann_app.retrospective import (
+    RETRO_DEFAULT_DAYS,
+    RETRO_DEFAULT_TOP,
+    RETRO_MIN_DIGESTS,
+    build_retrospective,
+)
 
 REPO_ROOT = os.path.dirname(os.path.abspath(__file__))
 
@@ -79,6 +85,37 @@ def run(
     return 0
 
 
+def retro(days: int, top: int, dry_run: bool) -> int:
+    result = build_retrospective(REPO_ROOT, days=days, top=top)
+
+    if result.digest_count < RETRO_MIN_DIGESTS:
+        print(
+            f"error: found {result.digest_count} recent digest(s); need at least "
+            f"{RETRO_MIN_DIGESTS} to build a retrospective",
+            file=sys.stderr,
+        )
+        return 2
+
+    if not result.stories:
+        print(
+            "error: no recurring stories found; refusing to write an empty retrospective",
+            file=sys.stderr,
+        )
+        return 2
+
+    if dry_run:
+        print(f"\n--- {result.filename} (dry run, not written) ---\n")
+        print(result.markdown)
+        return 0
+
+    out_path = os.path.join(REPO_ROOT, result.filename)
+    with open(out_path, "w", encoding="utf-8") as f:
+        f.write(result.markdown)
+    print(f"Wrote {out_path}")
+
+    return 0
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description="Generate the daily ANN headlines digest.")
     subparsers = parser.add_subparsers(dest="command", required=True)
@@ -113,6 +150,28 @@ def main() -> int:
         help="Load candidates from the dated cache snapshot instead of fetching feeds.",
     )
 
+    retro_parser = subparsers.add_parser(
+        "retro",
+        help="Build a weekly retrospective from recent daily digests.",
+    )
+    retro_parser.add_argument(
+        "--days",
+        type=int,
+        default=RETRO_DEFAULT_DAYS,
+        help=f"Look back this many days of digests (default: {RETRO_DEFAULT_DAYS}).",
+    )
+    retro_parser.add_argument(
+        "--top",
+        type=int,
+        default=RETRO_DEFAULT_TOP,
+        help=f"Include at most this many stories (default: {RETRO_DEFAULT_TOP}).",
+    )
+    retro_parser.add_argument(
+        "--dry-run",
+        action="store_true",
+        help="Print the retrospective instead of writing it.",
+    )
+
     args = parser.parse_args()
 
     if args.command == "run":
@@ -123,6 +182,9 @@ def main() -> int:
             use_cache=args.use_cache,
             save_cache=args.save_cache,
         )
+
+    if args.command == "retro":
+        return retro(args.days, args.top, args.dry_run)
 
     parser.print_help()
     return 1

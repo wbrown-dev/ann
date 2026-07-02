@@ -4,17 +4,18 @@ Living plan for finishing ANN beyond its core pipeline. Each numbered session is
 scoped to be completable in a single working session. Sessions are ordered by
 priority but are mostly independent — pick the next one, or reorder as needed.
 
-## Current state (2026-07-02)
+## Current state (2026-07-02, Sessions 4-8 done)
 
 - **Core pipeline complete:** fetch (`ann_app/fetch.py`) -> Claude filter,
   index-only/no-fabrication (`ann_app/filter.py`) -> render
   (`ann_app/render.py`) -> `headlines-YYYY-MM-DD.md` -> Streamlit dashboard
   (`streamlit_app.py`).
-- **Quality gate:** 28 tests passing, ruff clean. CI/CD green (lint + test
+- **Quality gate:** 61 tests passing, ruff clean. CI/CD green (lint + test
   matrix + Docker build/health smoke). Dockerized (`docker compose up` -> :8501).
   Daily digest automated via `.github/workflows/daily-digest.yml` (Session 4).
-- **Latest commit:** `cdf7f4e` on `origin/main` (dashboard XSS hardening,
-  cross-feed title dedup, transient-fetch retry).
+- **Latest commit:** `7da49b4` on `origin/main` (Session 7 continuity). Sessions
+  4-8 all shipped: automation, AP URL resolution, candidate caching, extra
+  outlets, and the weekly `ann.py retro` retrospective.
 - **No open bugs or code TODOs.** Everything below is enhancement or ops work.
 
 Run tests with `.venv/bin/python -m pytest` (system Python 3.14 lacks
@@ -244,13 +245,26 @@ not viral today") and reuses existing digest history.
 - `docs/` (document the feature)
 
 **Tasks:**
-- [ ] Load the last N daily digests via existing parser.
-- [ ] Cluster/dedupe recurring stories across days (normalized-title reuse from
+- [x] Load the last N daily digests via existing parser.
+- [x] Cluster/dedupe recurring stories across days (normalized-title reuse from
       `fetch._normalize_title`).
-- [ ] Produce a ranked weekly summary (model-assisted re-ranking optional,
+- [x] Produce a ranked weekly summary (model-assisted re-ranking optional,
       index-only to preserve no-fabrication guarantee).
-- [ ] Write `retrospective-YYYY-Www.md` (or similar) + optional dashboard view.
-- [ ] Tests over fixture digests (no network).
+- [x] Write `retrospective-YYYY-Www.md` (or similar) + optional dashboard view.
+- [x] Tests over fixture digests (no network).
+
+**Status:** Done (commit `PENDING`). Shipped `ann_app/retrospective.py` +
+`ann.py retro` (`--days`/`--top`/`--dry-run`). Clustering is a pure, offline,
+deterministic heuristic: salient-token overlap (reusing
+`fetch._normalize_title` + light stemming, union-of-cluster-tokens with a 0.4
+containment threshold and >=2 shared tokens) groups the same story across days;
+ranking is by distinct-days, then best daily rank, then appearances. Writes
+`retrospective-YYYY-Www.md` (ISO year-week of the newest digest); refuses
+(exit 2) with fewer than two recent digests or no stories. Chose no model call
+(the "optional" re-ranking) to stay deterministic and preserve no-fabrication
+trivially — every line is a verbatim prior headline. Dashboard tab left as
+optional/deferred. New `tests/test_retrospective.py` (8) -> **61 tests
+passing** (was 53); ruff clean.
 
 **Acceptance criteria:**
 - `ann.py retro` produces a weekly retrospective file from existing digests.
