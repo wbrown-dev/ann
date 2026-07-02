@@ -4,6 +4,7 @@ Last updated: 2026-07-02
 
 Sessions 4-9 are shipped. Current implementation commit: `cb41081`
 (`feat: auto-refresh dashboard digest`).
+Documentation finalization is captured in the latest docs commit.
 
 Current state:
 - Daily digest pipeline is complete: fetch -> Claude index-only filter ->
@@ -16,6 +17,8 @@ Current state:
   digests.
 - The dashboard auto-checks for a changed latest digest every 30 seconds and
   reruns when the filename or mtime changes.
+- The completed Sessions 4-9 roadmap has been compressed into a final-state
+  continuity archive for post-roadmap work.
 
 Quality gate:
 - `.venv/bin/python -m pytest`: 62 passed.

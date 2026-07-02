@@ -67,6 +67,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   linear backoff) and reuses a pooled `requests.Session` across all feeds.
 
 ### Changed
+- Compressed completed continuity docs into a final-state archive, updated the
+  resume prompt for post-roadmap work, and refreshed architecture docs to cover
+  the shipped cache, resolver, retrospective, and auto-refresh components.
 - `fetch.fetch_outlet` now deduplicates by normalized title in addition to
   link, so the same story appearing across an outlet's overlapping feeds
   (e.g. WSJ World + US + Markets) is only sent to the model once.

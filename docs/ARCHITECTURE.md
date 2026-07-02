@@ -1,39 +1,34 @@
 # Architecture
 
-ANN is a small pipeline plus two front-ends (a CLI and a Streamlit dashboard)
-over the same core package, `ann_app`.
+ANN is a small pipeline plus two front-ends (CLI and Streamlit dashboard) over
+the same core package, `ann_app`.
 
 ```
-RSS / Google News            ann_app/fetch.py      -> Candidate[]
-        │                          │
-        ▼                          ▼
-  ann_app/config.py  ──────►  ann_app/filter.py    -> {outlet: Candidate[]}   (Claude selects by index)
-                                   │
-                                   ▼
-                            ann_app/render.py       -> headlines-YYYY-MM-DD.md
-                                   │
-             ┌─────────────────────┴─────────────────────┐
-             ▼                                            ▼
-        ann.py (CLI)                            ann_app/parse.py
-     writes the digest                    reads a digest back into
-     and updates README                   typed Headline objects
-                                                  │
-                                                  ▼
-                                          streamlit_app.py
-                                    rotating headline dashboard
+RSS / Google News -> fetch/cache -> Claude index selection -> resolve AP URLs
+                                      │
+                                      ▼
+                          render headlines-YYYY-MM-DD.md
+                                      │
+                    ┌─────────────────┴─────────────────┐
+                    ▼                                   ▼
+              ann.py commands                    streamlit_app.py
+         run daily digest / retro           rotating auto-refresh dashboard
 ```
 
 ## Modules
 
 | Module | Responsibility |
 | --- | --- |
-| `ann_app/config.py` | Outlet → RSS feed map, the selection standard, model + request settings. |
+| `ann_app/config.py` | Outlet feeds, display names, accents, selection standard, model settings. |
 | `ann_app/fetch.py` | Pull and de-duplicate candidate headlines within a lookback window. |
-| `ann_app/filter.py` | Ask Claude to rank the top 5 per outlet **by candidate index only**, so titles and links are never fabricated. |
-| `ann_app/render.py` | Render selections to the daily Markdown digest and update the README link. |
-| `ann_app/parse.py` | Parse a digest Markdown file back into typed `OutletSection`/`Headline` objects; locate the newest digest. |
-| `ann.py` | CLI entry point (`run`, `--dry-run`, `--within-hours`, `--date`). |
-| `streamlit_app.py` | Dashboard front-end (see below). |
+| `ann_app/cache.py` | Save/load versioned candidate snapshots for offline replay. |
+| `ann_app/filter.py` | Ask Claude to rank by candidate index only, so titles and links are never fabricated. |
+| `ann_app/resolve.py` | Best-effort resolution of selected AP Google News links to canonical publisher URLs. |
+| `ann_app/render.py` | Render selections to daily Markdown and update the README link. |
+| `ann_app/parse.py` | Parse digest Markdown into typed sections/headlines and locate the latest digest. |
+| `ann_app/retrospective.py` | Build deterministic weekly retrospectives from prior daily digests. |
+| `ann.py` | CLI entry point for `run` and `retro`. |
+| `streamlit_app.py` | Rotating dashboard that auto-detects changed digest files. |
 
 ## Selection standard
 
@@ -61,3 +56,5 @@ outlets, and hands them to a self-contained HTML/JS component:
   exhausted the component reshuffles and continues.
 - Each outlet has an accent color (WSJ cyan, NYT blue, NBC indigo, AP magenta)
   matching the dark "ANN" visual system.
+- A timed Streamlit fragment checks the latest digest filename and mtime every
+  30 seconds and reruns when a new or overwritten digest appears.
