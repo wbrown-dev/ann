@@ -125,8 +125,20 @@ def test_gemini_provider_normalizes_text_and_request_shape():
     assert client.kwargs == {
         "model": "gemini-test",
         "contents": "prompt",
-        "config": {"max_output_tokens": 1024},
+        "config": {
+            "max_output_tokens": 1024,
+            "thinking_config": {"thinking_budget": 0},
+        },
     }
+
+
+def test_gemini_provider_disables_thinking_budget():
+    client = _GeminiClient('{"WSJ": [0]}')
+    provider = GeminiProvider(client=client)
+
+    provider.complete("prompt", "gemini-2.5-flash")
+
+    assert client.kwargs["config"]["thinking_config"] == {"thinking_budget": 0}
 
 
 def test_gemini_text_can_fall_back_to_candidate_parts():

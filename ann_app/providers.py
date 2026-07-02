@@ -89,7 +89,13 @@ class GeminiProvider:
         response = client.models.generate_content(
             model=model,
             contents=prompt,
-            config={"max_output_tokens": MAX_OUTPUT_TOKENS},
+            # gemini-2.5-flash is a thinking model: reasoning tokens count against
+            # max_output_tokens, so leaving thinking on can consume the whole budget
+            # and return empty text. Index-only selection needs no reasoning.
+            config={
+                "max_output_tokens": MAX_OUTPUT_TOKENS,
+                "thinking_config": {"thinking_budget": 0},
+            },
         )
         return _gemini_text(response)
 

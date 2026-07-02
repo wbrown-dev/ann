@@ -1,10 +1,10 @@
 # ANN Status
 
-Last updated: 2026-07-02 (post-roadmap: Gemini provider)
+Last updated: 2026-07-02 (v0.3.0: Gemini provider)
 
 Sessions 4-13 are shipped. Session 13 prepared ANN for a v0.2.0 release.
-Post-roadmap: added Google Gemini as a third index-only model provider
-(unreleased).
+Post-roadmap v0.3.0: added Google Gemini as a third index-only model provider
+and disabled Gemini thinking for selection reliability.
 
 Current state:
 - Daily digest pipeline is complete: fetch -> provider index-only filter ->
@@ -28,6 +28,9 @@ Current state:
   secrets, and DEVOPS.md / DEVELOPMENT.md document the Gemini secret, repo
   variable, and Docker invocation. Removed the orphaned `headlines20260701.md`
   (malformed name from a manual upload; matched no `headlines-*.md` glob).
+- Gemini thinking is disabled (`thinking_config.thinking_budget = 0`) so
+  `gemini-2.5-flash` reasoning tokens cannot exhaust `max_output_tokens` and
+  return empty selection text. Released as v0.3.0.
 - The completed Sessions 4-13 roadmap has been compressed into a final-state
   continuity archive for post-roadmap work.
 - Release hardening is in place for v0.2.0: project metadata is bumped,
@@ -36,7 +39,7 @@ Current state:
   back to defaults.
 
 Quality gate:
-- `.venv/bin/python -m pytest`: 87 passed.
+- `.venv/bin/python -m pytest`: 88 passed.
 - `.venv/bin/ruff check .`: clean.
 
 Open R&D:

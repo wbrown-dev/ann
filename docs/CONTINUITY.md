@@ -27,13 +27,17 @@ release hardening for v0.2.0.
   handling (`GEMINI_API_KEY` / `GOOGLE_API_KEY`, default `gemini-2.5-flash`). The
   daily-digest workflow validates all three providers and injects each provider's
   secret; DEVOPS.md and DEVELOPMENT.md document the Gemini path.
-- Release state: `pyproject.toml` is bumped to `0.2.0`, the changelog has a
-  dated `0.2.0` section, Dev-Ops documents production setup and release steps,
-  and blank GitHub Actions model variables fall back to defaults.
+- Release state: `pyproject.toml` is bumped to `0.3.0` (Gemini provider +
+  thinking-budget fix), the changelog has a dated `0.3.0` section, Dev-Ops
+  documents production setup and release steps, and blank GitHub Actions model
+  variables fall back to defaults.
+- Gemini reliability: `gemini-2.5-flash` thinking is disabled
+  (`thinking_config.thinking_budget = 0`) for index-only selection so reasoning
+  tokens cannot exhaust `max_output_tokens` and return empty text.
 
 ## Verification Baseline
 
-- `.venv/bin/python -m pytest`: 87 passing.
+- `.venv/bin/python -m pytest`: 88 passing.
 - `.venv/bin/ruff check .`: clean.
 - Use `.venv/bin/python -m pytest`; the system Python 3.14 may not have all
   project dependencies.

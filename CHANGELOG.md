@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.3.0] - 2026-07-02
+
 ### Added
 - Google Gemini as a third model provider for index-only selection. Set
   `GEMINI_API_KEY` (or `GOOGLE_API_KEY`) and run with `ANN_MODEL_PROVIDER=gemini`
@@ -20,6 +22,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   and both the validation and generate steps inject those secrets. DEVOPS.md and
   DEVELOPMENT.md document the Gemini secret, repository variable, and Docker run
   invocation alongside the existing providers.
+
+### Fixed
+- Disabled Gemini thinking (`thinking_config.thinking_budget = 0`) for
+  index-only selection. `gemini-2.5-flash` is a thinking model whose reasoning
+  tokens count against `max_output_tokens`; with the default budget those tokens
+  could consume the entire allowance and return empty text, causing the selection
+  parse to fail and no digest to be written. Selection needs no reasoning, so
+  thinking is turned off.
 
 ## [0.2.0] - 2026-07-02
 
