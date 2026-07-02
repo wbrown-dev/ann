@@ -204,7 +204,7 @@ it while keeping the curated default lean.
 - [x] Ensure display names + accent colors exist for enabled outlets.
 - [x] Tests for enabled vs. disabled resolution.
 
-**Status:** Done (commit `PENDING`). Shipped `ANN_EXTRA_OUTLETS` (comma-
+**Status:** Done (commit `b72201c`). Shipped `ANN_EXTRA_OUTLETS` (comma-
 separated, case-insensitive) enabling any of `GUARDIAN`/`BBC`/`NPR` on top of
 the default four; unknown names ignored. Live RSS verified for all three
 (Guardian 45 / BBC 36 / NPR 10 items). Config now exposes
