@@ -1,7 +1,22 @@
 from __future__ import annotations
 
+from urllib.parse import urlparse
+
 from ann_app.config import HEADLINES_PER_OUTLET, OUTLET_DISPLAY_NAMES, OUTLET_FEEDS
 from ann_app.fetch import Candidate
+
+
+def _markdown_link_text(text: str) -> str:
+    return text.replace("\\", "\\\\").replace("[", "\\[").replace("]", "\\]")
+
+
+def _safe_markdown_url(link: str | None) -> str | None:
+    if not link:
+        return None
+    parsed = urlparse(link)
+    if parsed.scheme not in {"http", "https"} or not parsed.netloc:
+        return None
+    return link.replace("\\", "%5C").replace("<", "%3C").replace(">", "%3E")
 
 
 def render_markdown(
@@ -18,7 +33,12 @@ def render_markdown(
         headlines = selections.get(outlet, [])
         if headlines:
             for i, c in enumerate(headlines, start=1):
-                lines.append(f"{i}. [{c.title}]({c.link})")
+                title = _markdown_link_text(c.title)
+                link = _safe_markdown_url(c.link)
+                if link:
+                    lines.append(f"{i}. [{title}](<{link}>)")
+                else:
+                    lines.append(f"{i}. {title}")
         else:
             lines.append("No headlines available for this outlet today.")
         lines.append("")

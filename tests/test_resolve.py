@@ -74,6 +74,13 @@ def test_non_google_link_passes_through_without_network():
     assert resolve_google_news_url(CANONICAL, session=session) == CANONICAL
 
 
+def test_google_news_substring_on_other_host_passes_through_without_network():
+    session = ExplodingSession()
+    link = "https://example.com/redirect/news.google.com/rss/articles/CBMiExampleId"
+
+    assert resolve_google_news_url(link, session=session) == link
+
+
 def test_successful_resolution_returns_canonical():
     session = FakeSession()
     assert resolve_google_news_url(GNEWS, session=session) == CANONICAL

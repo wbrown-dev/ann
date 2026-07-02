@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Security
+- Hardened digest rendering and dashboard ingestion for untrusted RSS content:
+  Markdown output now escapes headline link text, only emits `http`/`https`
+  links, and wraps links in angle delimiters; the digest parser understands
+  that safer link form. The Streamlit dashboard validates links with
+  `urlparse`, builds outlet buttons with DOM text nodes instead of interpolated
+  `innerHTML`, and the Google News resolver now matches the exact
+  `news.google.com` hostname rather than a substring.
+
 ## [0.3.0] - 2026-07-02
 
 ### Added

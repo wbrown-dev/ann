@@ -41,7 +41,7 @@ SELECTION STANDARD:
 
 For each outlet, choose exactly {HEADLINES_PER_OUTLET} candidates by their \
 number, ranked most significant first, applying the standard above. Only \
-select from the numbered candidates given — do not invent headlines. If an \
+choose numbered candidates already provided — do not invent headlines. If an \
 outlet has fewer than {HEADLINES_PER_OUTLET} usable candidates, return as \
 many as are usable.
 

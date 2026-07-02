@@ -17,8 +17,8 @@ def test_render_markdown_lists_headlines_in_order():
     markdown = render_markdown(selections, fetch_errors={})
 
     assert "## WSJ" in markdown
-    assert "1. [Story A](https://wsj.com/a)" in markdown
-    assert "2. [Story B](https://wsj.com/b)" in markdown
+    assert "1. [Story A](<https://wsj.com/a>)" in markdown
+    assert "2. [Story B](<https://wsj.com/b>)" in markdown
     assert markdown.index("Story A") < markdown.index("Story B")
 
 
@@ -60,7 +60,24 @@ def test_render_uses_enabled_extra_outlet_display_name(monkeypatch):
     markdown = render_markdown(selections, fetch_errors={})
 
     assert "## The Guardian" in markdown
-    assert "1. [Extra story](https://theguardian.com/x)" in markdown
+    assert "1. [Extra story](<https://theguardian.com/x>)" in markdown
+
+
+def test_render_markdown_escapes_title_and_drops_unsafe_links():
+    selections = {
+        "WSJ": [
+            Candidate(outlet="WSJ", title="Story [with] brackets", link="javascript:alert(1)"),
+            Candidate(outlet="WSJ", title="Story with angle URL", link="https://example.com/a>b"),
+        ],
+        "NYT": [],
+        "NBC": [],
+        "AP": [],
+    }
+    markdown = render_markdown(selections, fetch_errors={})
+
+    assert "1. Story \\[with\\] brackets" in markdown
+    assert "javascript:alert" not in markdown
+    assert "2. [Story with angle URL](<https://example.com/a%3Eb>)" in markdown
 
 
 def test_update_readme_link(tmp_path):

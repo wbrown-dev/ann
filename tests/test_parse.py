@@ -69,6 +69,12 @@ def test_parse_digest_linked_and_plain_items():
     assert nyt.headlines[1].link == "https://nyt.com/x"
 
 
+def test_parse_digest_strips_angle_bracket_link_delimiters():
+    sections = parse_digest("## WSJ\n\n1. [Story A](<https://wsj.com/a>)\n")
+
+    assert sections[0].headlines[0].link == "https://wsj.com/a"
+
+
 def test_parse_digest_ignores_note_section_and_prose():
     sections = parse_digest(SAMPLE)
     titles = [h.title for s in sections for h in s.headlines]

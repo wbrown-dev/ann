@@ -3,6 +3,7 @@ from __future__ import annotations
 import json
 import os
 from datetime import datetime
+from urllib.parse import urlparse
 
 import streamlit as st
 
@@ -24,7 +25,10 @@ CONTENT_STATE_KEY = "ann_content_state"
 
 def _safe_url(link: str | None) -> str | None:
     """Only allow http(s) links; drop javascript:/data: and other schemes."""
-    if link and link.lower().startswith(("http://", "https://")):
+    if not link:
+        return None
+    parsed = urlparse(link)
+    if parsed.scheme in {"http", "https"} and parsed.netloc:
         return link
     return None
 
@@ -620,8 +624,15 @@ def _dashboard_component(
       button.dataset.outlet = outlet;
       button.style.setProperty('--dot', color);
       button.style.setProperty('--active-color', color);
-      button.innerHTML = '<span class="outlet-dot"></span><span class="outlet-name">' +
-        outlet + '</span><span class="active-pill">ON</span>';
+      const dot = document.createElement('span');
+      dot.className = 'outlet-dot';
+      const name = document.createElement('span');
+      name.className = 'outlet-name';
+      name.textContent = outlet;
+      const pill = document.createElement('span');
+      pill.className = 'active-pill';
+      pill.textContent = 'ON';
+      button.append(dot, name, pill);
       button.addEventListener('click', () => jumpToOutlet(outlet));
       outletNav.appendChild(button);
     }});

@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 import re
+from urllib.parse import urlparse
 
 import requests
 
@@ -20,7 +21,7 @@ _TS = re.compile(r'data-n-a-ts="([^"]+)"')
 
 
 def _is_google_news_url(link: str) -> bool:
-    return "news.google.com" in link
+    return urlparse(link).hostname == "news.google.com"
 
 
 def _extract_params(html: str) -> tuple[str, int, str] | None:

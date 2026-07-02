@@ -56,6 +56,13 @@ class Retrospective:
     note: str | None = None
 
 
+def _clean_markdown_link(raw: str) -> str:
+    link = raw.strip()
+    if link.startswith("<") and link.endswith(">"):
+        return link[1:-1].strip()
+    return link
+
+
 def parse_digest(text: str) -> list[OutletSection]:
     """Parse a headlines-YYYY-MM-DD.md digest into structured outlet sections.
 
@@ -87,7 +94,7 @@ def parse_digest(text: str) -> list[OutletSection]:
                     outlet=current.outlet,
                     rank=len(current.headlines) + 1,
                     title=linked.group("title").strip(),
-                    link=linked.group("link").strip(),
+                    link=_clean_markdown_link(linked.group("link")),
                 )
             )
             continue
