@@ -29,6 +29,12 @@ class OutletSection:
     note: str | None = None
 
 
+@dataclass(frozen=True)
+class DigestState:
+    path: str
+    mtime_ns: int
+
+
 def parse_digest(text: str) -> list[OutletSection]:
     """Parse a headlines-YYYY-MM-DD.md digest into structured outlet sections.
 
@@ -85,7 +91,13 @@ def flatten_headlines(sections: list[OutletSection]) -> list[Headline]:
 
 
 def find_latest_digest(repo_root: str) -> str | None:
+    state = find_latest_digest_state(repo_root)
+    return state.path if state else None
+
+
+def find_latest_digest_state(repo_root: str) -> DigestState | None:
     matches = glob.glob(os.path.join(repo_root, "headlines-*.md"))
     if not matches:
         return None
-    return max(matches, key=os.path.basename)
+    latest = max(matches, key=os.path.basename)
+    return DigestState(path=latest, mtime_ns=os.stat(latest).st_mtime_ns)

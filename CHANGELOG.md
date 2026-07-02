@@ -8,6 +8,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- The Streamlit dashboard now auto-checks the latest `headlines-*.md` digest
+  every 30 seconds using a timed fragment. It tracks both filename and mtime, so
+  a newly generated digest or an overwritten current-day digest is reflected
+  without using the manual Refresh button or restarting the dashboard.
 - `ann_app/retrospective.py` + `ann.py retro` — a weekly "what still mattered"
   digest built from the recent daily `headlines-YYYY-MM-DD.md` files. Headlines
   are clustered into stories by salient-token overlap (reusing

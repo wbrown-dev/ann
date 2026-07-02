@@ -1,5 +1,8 @@
+import os
+
 from ann_app.parse import (
     find_latest_digest,
+    find_latest_digest_state,
     flatten_headlines,
     parse_digest,
 )
@@ -78,3 +81,18 @@ def test_find_latest_digest_picks_newest(tmp_path):
 
 def test_find_latest_digest_none_when_empty(tmp_path):
     assert find_latest_digest(str(tmp_path)) is None
+
+
+def test_find_latest_digest_state_includes_mtime(tmp_path):
+    latest = tmp_path / "headlines-2026-07-02.md"
+    latest.write_text("## WSJ\n")
+    state = find_latest_digest_state(str(tmp_path))
+    assert state is not None
+
+    latest.write_text("## NYT\n")
+    os.utime(latest, ns=(state.mtime_ns + 1_000_000, state.mtime_ns + 1_000_000))
+    updated = find_latest_digest_state(str(tmp_path))
+
+    assert updated is not None
+    assert updated.path == str(latest)
+    assert updated.mtime_ns > state.mtime_ns

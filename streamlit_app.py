@@ -10,14 +10,17 @@ import streamlit.components.v1 as components
 from ann_app.config import OUTLET_ACCENTS
 from ann_app.parse import (
     find_latest_digest,
+    find_latest_digest_state,
     flatten_headlines,
     parse_digest,
 )
 
 REPO_ROOT = os.path.dirname(os.path.abspath(__file__))
 ROTATION_SECONDS = 10
+REFRESH_POLL_SECONDS = 30
 
 DEFAULT_ACCENT = "#4dd0e1"
+DIGEST_STATE_KEY = "ann_digest_state"
 
 
 def _safe_url(link: str | None) -> str | None:
@@ -329,8 +332,26 @@ def _render_digest(sections) -> None:
         cols[i % 2].markdown(card, unsafe_allow_html=True)
 
 
+def _digest_signature(repo_root: str) -> tuple[str, int] | None:
+    state = find_latest_digest_state(repo_root)
+    if state is None:
+        return None
+    return (os.path.basename(state.path), state.mtime_ns)
+
+
+@st.fragment(run_every=f"{REFRESH_POLL_SECONDS}s")
+def _watch_latest_digest(repo_root: str) -> None:
+    current = _digest_signature(repo_root)
+    if st.session_state.get(DIGEST_STATE_KEY) == current:
+        return
+    st.session_state[DIGEST_STATE_KEY] = current
+    st.rerun()
+
+
 def main() -> None:
     latest = find_latest_digest(REPO_ROOT)
+    st.session_state[DIGEST_STATE_KEY] = _digest_signature(REPO_ROOT)
+    _watch_latest_digest(REPO_ROOT)
 
     with st.sidebar:
         st.markdown('<div class="ann-kicker">All the news you need</div>', unsafe_allow_html=True)
@@ -339,6 +360,7 @@ def main() -> None:
         st.divider()
         if latest:
             st.markdown(f"**Digest:** `{os.path.basename(latest)}`")
+            st.caption(f"Auto-checking for a new digest every {REFRESH_POLL_SECONDS} seconds.")
         if st.button("Refresh digest", use_container_width=True):
             st.rerun()
         st.divider()

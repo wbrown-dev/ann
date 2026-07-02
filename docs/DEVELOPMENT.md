@@ -30,6 +30,9 @@ cp .env.example .env        # add ANTHROPIC_API_KEY
 
 Open http://localhost:8501. The main window rotates through every headline in
 the latest digest, 10 seconds each, no repeats until all have been shown.
+The dashboard auto-checks the newest `headlines-*.md` file every 30 seconds and
+reruns when the filename or file mtime changes, so a newly generated digest
+appears without restarting the Streamlit server.
 
 ## Tests and linting
 
