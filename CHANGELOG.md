@@ -8,6 +8,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- `ann_app/cache.py` — versioned JSON snapshot of fetched candidates keyed by
+  date (round-trips `Candidate`, including the `published` timestamp). Stale or
+  mismatched cache versions fail loudly instead of silently. `ann.py run
+  --save-cache` writes the snapshot after fetch; `ann.py run --use-cache`
+  replays a digest entirely offline with no network fetch. The two flags are
+  mutually exclusive and the `.cache/` dir is gitignored.
+- `ann_app/filter.select_headlines` now accepts an injectable Anthropic
+  `client`, enabling deterministic tests of selection, ranking, truncation, and
+  index-bounds/type rejection against a stubbed model (no live network or key).
 - `ann_app/resolve.py` — resolves selected AP headlines from opaque
   `news.google.com/rss/articles/...` redirect links to canonical `apnews.com`
   article URLs via Google's `batchexecute` endpoint. Runs on selected headlines

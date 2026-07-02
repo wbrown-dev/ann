@@ -77,10 +77,9 @@ def _parse_response(text: str) -> dict[str, list[int]]:
         raise FilterError(f"could not parse model response as JSON: {exc}\n{text}") from exc
 
 
-def select_headlines(candidates: list[Candidate]) -> dict[str, list[Candidate]]:
-    if not ANTHROPIC_API_KEY:
-        raise FilterError("ANTHROPIC_API_KEY is not set")
-
+def select_headlines(
+    candidates: list[Candidate], client: anthropic.Anthropic | None = None
+) -> dict[str, list[Candidate]]:
     grouped: dict[str, list[Candidate]] = defaultdict(list)
     for c in candidates:
         grouped[c.outlet].append(c)
@@ -88,7 +87,11 @@ def select_headlines(candidates: list[Candidate]) -> dict[str, list[Candidate]]:
     if not grouped:
         return {}
 
-    client = anthropic.Anthropic(api_key=ANTHROPIC_API_KEY)
+    if client is None:
+        if not ANTHROPIC_API_KEY:
+            raise FilterError("ANTHROPIC_API_KEY is not set")
+        client = anthropic.Anthropic(api_key=ANTHROPIC_API_KEY)
+
     prompt = _build_prompt(grouped)
 
     response = client.messages.create(

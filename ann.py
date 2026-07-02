@@ -5,6 +5,7 @@ import os
 import sys
 from datetime import date
 
+from ann_app.cache import CacheError, load_candidates, save_candidates
 from ann_app.fetch import fetch_all
 from ann_app.filter import FilterError, select_headlines
 from ann_app.render import render_markdown, update_readme_link
@@ -13,16 +14,36 @@ from ann_app.resolve import resolve_selection
 REPO_ROOT = os.path.dirname(os.path.abspath(__file__))
 
 
-def run(target_date: date, dry_run: bool, within_hours: int) -> int:
-    print(f"Fetching candidate headlines (lookback {within_hours}h)...")
-    fetch_result = fetch_all(within_hours=within_hours)
-    print(f"Fetched {len(fetch_result.candidates)} candidates.")
-    for outlet, error in fetch_result.errors.items():
-        print(f"  warning: {outlet} — {error}")
+def run(
+    target_date: date,
+    dry_run: bool,
+    within_hours: int,
+    use_cache: bool = False,
+    save_cache: bool = False,
+) -> int:
+    if use_cache:
+        try:
+            candidates = load_candidates(target_date)
+        except CacheError as exc:
+            print(f"error: {exc}", file=sys.stderr)
+            return 1
+        errors: dict[str, str] = {}
+        print(f"Loaded {len(candidates)} candidates from cache.")
+    else:
+        print(f"Fetching candidate headlines (lookback {within_hours}h)...")
+        fetch_result = fetch_all(within_hours=within_hours)
+        candidates = fetch_result.candidates
+        errors = fetch_result.errors
+        print(f"Fetched {len(candidates)} candidates.")
+        for outlet, error in errors.items():
+            print(f"  warning: {outlet} — {error}")
+        if save_cache:
+            path = save_candidates(candidates, target_date)
+            print(f"Saved candidate cache to {path}")
 
     print("Selecting headlines against the significance standard...")
     try:
-        selections = select_headlines(fetch_result.candidates)
+        selections = select_headlines(candidates)
     except FilterError as exc:
         print(f"error: {exc}", file=sys.stderr)
         return 1
@@ -37,7 +58,7 @@ def run(target_date: date, dry_run: bool, within_hours: int) -> int:
     print("Resolving publisher URLs...")
     resolve_selection(selections)
 
-    markdown = render_markdown(selections, fetch_result.errors)
+    markdown = render_markdown(selections, errors)
 
     filename = f"headlines-{target_date.isoformat()}.md"
     out_path = os.path.join(REPO_ROOT, filename)
@@ -80,11 +101,28 @@ def main() -> int:
         default=36,
         help="Only consider candidate headlines published within this many hours (default: 36).",
     )
+    cache_group = run_parser.add_mutually_exclusive_group()
+    cache_group.add_argument(
+        "--save-cache",
+        action="store_true",
+        help="Save fetched candidates to a dated snapshot for later offline replay.",
+    )
+    cache_group.add_argument(
+        "--use-cache",
+        action="store_true",
+        help="Load candidates from the dated cache snapshot instead of fetching feeds.",
+    )
 
     args = parser.parse_args()
 
     if args.command == "run":
-        return run(args.date, args.dry_run, args.within_hours)
+        return run(
+            args.date,
+            args.dry_run,
+            args.within_hours,
+            use_cache=args.use_cache,
+            save_cache=args.save_cache,
+        )
 
     parser.print_help()
     return 1

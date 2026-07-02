@@ -157,11 +157,20 @@ calls.
   to `HEADLINES_PER_OUTLET`, out-of-range index rejection)
 
 **Tasks:**
-- [ ] Define a serializable candidate snapshot format (round-trips `Candidate`).
-- [ ] Add save/load of candidates keyed by date to a cache dir (gitignored).
-- [ ] CLI flags to save on fetch and to run from cache without fetching.
-- [ ] Make the Anthropic client injectable so tests can stub the response.
-- [ ] Add filter tests covering selection, ranking, bounds, and truncation.
+- [x] Define a serializable candidate snapshot format (round-trips `Candidate`).
+- [x] Add save/load of candidates keyed by date to a cache dir (gitignored).
+- [x] CLI flags to save on fetch and to run from cache without fetching.
+- [x] Make the Anthropic client injectable so tests can stub the response.
+- [x] Add filter tests covering selection, ranking, bounds, and truncation.
+
+**Status:** Done (commit `PENDING`). Shipped `ann_app/cache.py` (versioned JSON
+snapshot keyed by date, round-trips `Candidate` incl. `published`; stale/missing
+caches raise `CacheError`). `ann.py run` gained mutually-exclusive
+`--save-cache` / `--use-cache`; `.cache/` gitignored. `filter.select_headlines`
+now takes an optional injectable `client`, enabling stubbed-model tests of
+selection, ranking, truncation to `HEADLINES_PER_OUTLET`, and out-of-range /
+non-int index rejection. New `tests/test_cache.py` (3) + filter (4) + run (1) →
+**45 tests passing** (was 37); ruff clean.
 
 **Acceptance criteria:**
 - `ann.py run --use-cache` produces a digest without any network fetch.

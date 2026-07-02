@@ -38,10 +38,20 @@ the latest digest, 10 seconds each, no repeats until all have been shown.
 .venv/bin/ruff check .            # lint (install ruff if needed: pip install ruff)
 ```
 
-New behavior should ship with tests. `ann_app/fetch.py` and the live model call
-in `ann_app/filter.py` are intentionally not unit-tested against the network;
-test the pure functions (`_parse_response`, `render_markdown`, `parse_digest`)
-instead.
+New behavior should ship with tests. `ann_app/fetch.py` is intentionally not
+unit-tested against the network; test the pure functions (`_parse_response`,
+`render_markdown`, `parse_digest`) instead. `filter.select_headlines` accepts an
+injectable `client`, so its selection/ranking/bounds logic is tested against a
+stubbed model rather than a live API call.
+
+## Candidate caching
+
+`ann.py run --save-cache` writes the fetched candidates to a versioned JSON
+snapshot under `.cache/candidates-YYYY-MM-DD.json` (gitignored). `ann.py run
+--use-cache` rebuilds a digest from that snapshot without touching the network,
+which makes runs replayable offline. The two flags are mutually exclusive. A
+missing snapshot or a cache written by an incompatible version fails loudly
+(`CacheError`) rather than silently producing a stale or empty digest.
 
 ## AP URL resolution
 
@@ -68,5 +78,4 @@ treat this as best-effort.
 Areas open for exploration:
 
 - Optional additional outlets (Reuters, Bloomberg, FT) behind a config flag.
-- Caching fetched candidates to make repeated runs deterministic for testing.
 - A weekly "what still mattered" retrospective built from past digests.
