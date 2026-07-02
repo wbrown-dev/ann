@@ -163,7 +163,7 @@ calls.
 - [x] Make the Anthropic client injectable so tests can stub the response.
 - [x] Add filter tests covering selection, ranking, bounds, and truncation.
 
-**Status:** Done (commit `PENDING`). Shipped `ann_app/cache.py` (versioned JSON
+**Status:** Done (commit `541270e`). Shipped `ann_app/cache.py` (versioned JSON
 snapshot keyed by date, round-trips `Candidate` incl. `published`; stale/missing
 caches raise `CacheError`). `ann.py run` gained mutually-exclusive
 `--save-cache` / `--use-cache`; `.cache/` gitignored. `filter.select_headlines`
