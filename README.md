@@ -39,7 +39,7 @@ Preference is given to developments with durable consequences, including:
 - Regulation and public policy
 - Markets, trade, labor, and business
 - Technology and scientific developments
-- Public health
+- Public health, medical developments
 - Infrastructure, energy, and logistics
 - Major institutional changes
 
@@ -53,7 +53,6 @@ The digest intentionally avoids or deprioritizes:
 - Partisan theater
 - Viral curiosities
 - Lifestyle filler
-- Stories whose importance depends mainly on novelty
 
 ## Format
 
