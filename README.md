@@ -76,6 +76,7 @@ See [`docs/DEVOPS.md`](docs/DEVOPS.md) for image details and CI.
 
 - [Architecture](docs/ARCHITECTURE.md) — pipeline, modules, the no-fabrication guarantee
 - [Development](docs/DEVELOPMENT.md) — setup, tests, R&D notes
+- [Continuity & Roadmap](docs/CONTINUITY.md) — remaining work, broken into sessions
 - [Dev-Ops](docs/DEVOPS.md) — CI/CD, Docker, releases
 - [Contributing](CONTRIBUTING.md) · [Code of Conduct](CODE_OF_CONDUCT.md) · [Security](SECURITY.md) · [Changelog](CHANGELOG.md)
 
