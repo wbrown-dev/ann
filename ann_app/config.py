@@ -72,3 +72,12 @@ The digest intentionally avoids or deprioritizes:
 
 REQUEST_TIMEOUT_SECONDS = 10
 USER_AGENT = "Mozilla/5.0 (compatible; ANN-digest/1.0)"
+
+# AP links arrive as opaque news.google.com redirect URLs. Resolving them to the
+# canonical apnews.com article costs two extra requests per link, so it runs on
+# selected headlines only. Kill switch in case Google changes the scheme again.
+RESOLVE_GOOGLE_NEWS_URLS = os.environ.get("ANN_RESOLVE_URLS", "1").lower() not in (
+    "0",
+    "false",
+    "no",
+)

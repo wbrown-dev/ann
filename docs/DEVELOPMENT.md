@@ -43,6 +43,21 @@ in `ann_app/filter.py` are intentionally not unit-tested against the network;
 test the pure functions (`_parse_response`, `render_markdown`, `parse_digest`)
 instead.
 
+## AP URL resolution
+
+AP has no public RSS feed, so AP candidates come from a Google News query and
+arrive as opaque `news.google.com/rss/articles/...` redirect links. After the
+model selects headlines, `ann_app/resolve.py` resolves the selected AP links to
+their canonical `apnews.com` article URLs via Google's `batchexecute` endpoint
+(fetch the article page for a signed token, then one RPC call — two requests per
+link, run on selected headlines only).
+
+Resolution degrades gracefully: on any timeout, HTTP error, or scheme change the
+original Google News link is used and the run still succeeds. Set
+`ANN_RESOLVE_URLS=0` to disable it entirely (kill switch if Google changes the
+encoding again). The scheme is undocumented and has changed before (2024), so
+treat this as best-effort.
+
 ## Environment safety
 
 - Never run `source .env`; the app loads it via `python-dotenv`.
@@ -52,7 +67,6 @@ instead.
 
 Areas open for exploration:
 
-- Resolving Google News redirect URLs to canonical `apnews.com` links.
 - Optional additional outlets (Reuters, Bloomberg, FT) behind a config flag.
 - Caching fetched candidates to make repeated runs deterministic for testing.
 - A weekly "what still mattered" retrospective built from past digests.

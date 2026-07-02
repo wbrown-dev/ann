@@ -67,7 +67,7 @@ launchd plist — document but do not default to it.)
 - [x] Guard against empty/failed generation (do not commit an empty digest;
       fail the job with a clear message).
 
-**Status:** Done (commit `<pending>`). Shipped
+**Status:** Done (commit `567968c`). Shipped
 `.github/workflows/daily-digest.yml` (cron `0 11 * * *` + `workflow_dispatch`,
 `[skip ci]` digest commits as `ann-bot`) and an empty-digest guard in `ann.py`
 (exit code 2, writes nothing). 28 tests passing (was 26); DEVOPS.md documents
@@ -105,15 +105,24 @@ resolution is feasible before committing to full implementation.
 - `docs/DEVELOPMENT.md` (remove from R&D once shipped; document limitations)
 
 **Tasks:**
-- [ ] Spike: confirm a reliable method to resolve a Google News RSS link to its
+- [x] Spike: confirm a reliable method to resolve a Google News RSS link to its
       canonical publisher URL (document findings even if negative).
-- [ ] If feasible: add `_resolve_google_news_url(link)` with timeout + graceful
+- [x] If feasible: add `_resolve_google_news_url(link)` with timeout + graceful
       fallback to the original link on failure.
-- [ ] Apply only to Google-News-sourced entries (AP); leave direct feeds
+- [x] Apply only to Google-News-sourced entries (AP); leave direct feeds
       untouched.
-- [ ] Cache/deduplicate resolution within a run to limit extra requests.
-- [ ] Tests: successful resolution, failure fallback, non-Google links pass
+- [x] Cache/deduplicate resolution within a run to limit extra requests.
+- [x] Tests: successful resolution, failure fallback, non-Google links pass
       through unchanged.
+
+**Status:** Done (commit `<pending>`). Spike was positive: the post-2024
+Google News scheme resolves via the article page's `data-n-a-{id,sg,ts}` tokens
+plus one `batchexecute` RPC. Shipped `ann_app/resolve.py`
+(`resolve_google_news_url` + `resolve_selection`), wired into `ann.py` after
+selection so only the <=5 selected AP links are resolved (two requests each,
+per-run cached). Graceful fallback to the original link on any error; kill
+switch `ANN_RESOLVE_URLS=0`. 37 tests passing (was 28). Verified live: real AP
+entries resolve to `apnews.com/article/...`.
 
 **Acceptance criteria:**
 - AP digest entries link to `apnews.com` (or the canonical publisher) when

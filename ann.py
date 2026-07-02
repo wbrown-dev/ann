@@ -8,6 +8,7 @@ from datetime import date
 from ann_app.fetch import fetch_all
 from ann_app.filter import FilterError, select_headlines
 from ann_app.render import render_markdown, update_readme_link
+from ann_app.resolve import resolve_selection
 
 REPO_ROOT = os.path.dirname(os.path.abspath(__file__))
 
@@ -32,6 +33,9 @@ def run(target_date: date, dry_run: bool, within_hours: int) -> int:
             file=sys.stderr,
         )
         return 2
+
+    print("Resolving publisher URLs...")
+    resolve_selection(selections)
 
     markdown = render_markdown(selections, fetch_result.errors)
 

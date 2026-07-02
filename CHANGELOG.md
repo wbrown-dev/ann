@@ -8,6 +8,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- `ann_app/resolve.py` — resolves selected AP headlines from opaque
+  `news.google.com/rss/articles/...` redirect links to canonical `apnews.com`
+  article URLs via Google's `batchexecute` endpoint. Runs on selected headlines
+  only (two requests per link, per-run cached), degrades gracefully to the
+  original link on failure, and can be disabled with `ANN_RESOLVE_URLS=0`.
 - `.github/workflows/daily-digest.yml` — scheduled GitHub Actions workflow that
   runs `ann.py run` daily at 11:00 UTC (and on manual `workflow_dispatch`),
   commits the new `headlines-YYYY-MM-DD.md` + README link as `ann-bot`, and
@@ -18,7 +23,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `ann_app/parse.py` — structured parser that turns a `headlines-YYYY-MM-DD.md`
   digest into typed outlet/headline objects, plus a helper to locate the latest
   digest.
-- `streamlit_app.py` — a Streamlit dashboard with a DTS-style dark UI that
+- `streamlit_app.py` — a Streamlit dashboard with an ANN-style dark UI that
   rotates every headline in the main window, 10 seconds each, with no repeats
   until all headlines in the digest have been shown.
 - OSS repository infrastructure: MIT `LICENSE`, `NOTICE` (attribution to the
