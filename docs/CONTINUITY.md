@@ -253,7 +253,7 @@ not viral today") and reuses existing digest history.
 - [x] Write `retrospective-YYYY-Www.md` (or similar) + optional dashboard view.
 - [x] Tests over fixture digests (no network).
 
-**Status:** Done (commit `PENDING`). Shipped `ann_app/retrospective.py` +
+**Status:** Done (commit `b0b6f4a`). Shipped `ann_app/retrospective.py` +
 `ann.py retro` (`--days`/`--top`/`--dry-run`). Clustering is a pure, offline,
 deterministic heuristic: salient-token overlap (reusing
 `fetch._normalize_title` + light stemming, union-of-cluster-tokens with a 0.4
