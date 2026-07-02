@@ -4,18 +4,18 @@ Living plan for finishing ANN beyond its core pipeline. Each numbered session is
 scoped to be completable in a single working session. Sessions are ordered by
 priority but are mostly independent — pick the next one, or reorder as needed.
 
-## Current state (2026-07-02, Sessions 4-8 done)
+## Current state (2026-07-02, Sessions 4-9 done)
 
 - **Core pipeline complete:** fetch (`ann_app/fetch.py`) -> Claude filter,
   index-only/no-fabrication (`ann_app/filter.py`) -> render
   (`ann_app/render.py`) -> `headlines-YYYY-MM-DD.md` -> Streamlit dashboard
   (`streamlit_app.py`).
-- **Quality gate:** 61 tests passing, ruff clean. CI/CD green (lint + test
+- **Quality gate:** 62 tests passing, ruff clean. CI/CD green (lint + test
   matrix + Docker build/health smoke). Dockerized (`docker compose up` -> :8501).
   Daily digest automated via `.github/workflows/daily-digest.yml` (Session 4).
-- **Latest commit:** `7da49b4` on `origin/main` (Session 7 continuity). Sessions
-  4-8 all shipped: automation, AP URL resolution, candidate caching, extra
-  outlets, and the weekly `ann.py retro` retrospective.
+- **Latest commit:** `cb41081` (Session 9 implementation). Sessions
+  4-9 all shipped: automation, AP URL resolution, candidate caching, extra
+  outlets, the weekly `ann.py retro` retrospective, and dashboard auto-refresh.
 - **No open bugs or code TODOs.** Everything below is enhancement or ops work.
 
 Run tests with `.venv/bin/python -m pytest` (system Python 3.14 lacks
@@ -284,10 +284,20 @@ guarantee either way).
 **Rationale:** Low-priority polish, batched into one session.
 
 **Items:**
-- [ ] Dashboard auto-refreshes (or clearly signals) when a newer digest lands,
+- [x] Dashboard auto-refreshes (or clearly signals) when a newer digest lands,
       rather than requiring the manual Refresh button.
-- [ ] Any small UX/copy fixes discovered during earlier sessions.
-- [ ] Revisit `docs/DEVELOPMENT.md` R&D list and prune anything now shipped.
+- [x] Any small UX/copy fixes discovered during earlier sessions.
+- [x] Revisit `docs/DEVELOPMENT.md` R&D list and prune anything now shipped.
+
+**Status:** Done (commit `cb41081`). Shipped a timed Streamlit fragment that
+polls the latest digest signature every 30 seconds and reruns only when the
+newest `headlines-*.md` filename or mtime changes, so a new digest or
+overwritten current-day digest appears without a manual refresh or server
+restart. Added `DigestState` / `find_latest_digest_state` for testable path +
+mtime discovery and a parser test covering the mtime signal. Sidebar copy now
+clearly says the dashboard is auto-checking. R&D notes were reviewed; the
+remaining items are still unshipped and were left in place. **62 tests passing**
+(was 61); ruff clean.
 
 **Acceptance criteria:**
 - Dashboard reflects a newly generated digest without a manual full restart
