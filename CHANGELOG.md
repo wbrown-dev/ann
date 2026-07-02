@@ -8,6 +8,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- Optional extra outlets behind a config flag. `ANN_EXTRA_OUTLETS` (comma-
+  separated, case-insensitive) enables any of `GUARDIAN`, `BBC`, `NPR` on top of
+  the default four (WSJ/NYT/NBC/AP); unknown names are ignored. Each extra has a
+  live, non-paywalled RSS feed plus a display name and accent color, and flows
+  through the full pipeline (fetch -> filter -> render -> dashboard). Config
+  resolution is a pure `resolve_outlet_config` helper; `OUTLET_ACCENTS` now lives
+  in `ann_app/config.py` (imported by the dashboard) so extras get colors too.
 - `ann_app/cache.py` — versioned JSON snapshot of fetched candidates keyed by
   date (round-trips `Candidate`, including the `published` timestamp). Stale or
   mismatched cache versions fail loudly instead of silently. `ann.py run

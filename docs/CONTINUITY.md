@@ -199,10 +199,22 @@ it while keeping the curated default lean.
 - `docs/DEVELOPMENT.md` (document how to enable extra outlets)
 
 **Tasks:**
-- [ ] Add feed URLs for the candidate extra outlets (verify each RSS is live).
-- [ ] Add an opt-in mechanism (default remains the current four).
-- [ ] Ensure display names + accent colors exist for enabled outlets.
-- [ ] Tests for enabled vs. disabled resolution.
+- [x] Add feed URLs for the candidate extra outlets (verify each RSS is live).
+- [x] Add an opt-in mechanism (default remains the current four).
+- [x] Ensure display names + accent colors exist for enabled outlets.
+- [x] Tests for enabled vs. disabled resolution.
+
+**Status:** Done (commit `PENDING`). Shipped `ANN_EXTRA_OUTLETS` (comma-
+separated, case-insensitive) enabling any of `GUARDIAN`/`BBC`/`NPR` on top of
+the default four; unknown names ignored. Live RSS verified for all three
+(Guardian 45 / BBC 36 / NPR 10 items). Config now exposes
+`DEFAULT_/EXTRA_OUTLET_{FEEDS,DISPLAY_NAMES,ACCENTS}` plus a pure
+`resolve_outlet_config` helper; `OUTLET_ACCENTS` moved from `streamlit_app.py`
+into `ann_app/config.py` so extras get colors through the dashboard. New
+`tests/test_config.py` (7) + a render test for an enabled extra (+1) →
+**53 tests passing** (was 45); ruff clean. Chose clean direct-RSS outlets over
+Reuters/Bloomberg (which only exist as opaque Google News redirects and are not
+resolved outside the AP path).
 
 **Acceptance criteria:**
 - Default behavior unchanged (four outlets).

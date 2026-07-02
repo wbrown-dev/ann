@@ -68,6 +68,24 @@ original Google News link is used and the run still succeeds. Set
 encoding again). The scheme is undocumented and has changed before (2024), so
 treat this as best-effort.
 
+## Extra outlets
+
+The default digest covers four outlets (WSJ, NYT, NBC, AP). Additional outlets
+are available opt-in via the `ANN_EXTRA_OUTLETS` environment variable — a
+comma-separated, case-insensitive list. Supported extras: `GUARDIAN`, `BBC`,
+`NPR` (each a live, non-paywalled RSS feed yielding clean canonical article
+links). Unknown names are ignored so a typo cannot silently drop a real outlet.
+
+```bash
+ANN_EXTRA_OUTLETS="GUARDIAN,BBC" .venv/bin/python ann.py run
+```
+
+Enabled extras flow through the whole pipeline (fetch -> filter -> render ->
+dashboard) and pick up their display name and accent color automatically. To add
+a new candidate outlet, extend `EXTRA_OUTLET_FEEDS` / `_DISPLAY_NAMES` /
+`_ACCENTS` in `ann_app/config.py`; resolution logic lives in the pure
+`resolve_outlet_config` helper.
+
 ## Environment safety
 
 - Never run `source .env`; the app loads it via `python-dotenv`.
@@ -77,5 +95,4 @@ treat this as best-effort.
 
 Areas open for exploration:
 
-- Optional additional outlets (Reuters, Bloomberg, FT) behind a config flag.
 - A weekly "what still mattered" retrospective built from past digests.

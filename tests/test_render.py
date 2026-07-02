@@ -1,3 +1,5 @@
+import ann_app.render as render_module
+from ann_app.config import resolve_outlet_config
 from ann_app.fetch import Candidate
 from ann_app.render import render_markdown, update_readme_link
 
@@ -39,6 +41,26 @@ def test_render_markdown_notes_short_outlet():
     markdown = render_markdown(selections, fetch_errors={})
 
     assert "only 1 usable headline" in markdown
+
+
+def test_render_uses_enabled_extra_outlet_display_name(monkeypatch):
+    feeds, display, _accents = resolve_outlet_config("GUARDIAN")
+    monkeypatch.setattr(render_module, "OUTLET_FEEDS", feeds)
+    monkeypatch.setattr(render_module, "OUTLET_DISPLAY_NAMES", display)
+
+    selections = {
+        "WSJ": [],
+        "NYT": [],
+        "NBC": [],
+        "AP": [],
+        "GUARDIAN": [
+            Candidate(outlet="GUARDIAN", title="Extra story", link="https://theguardian.com/x"),
+        ],
+    }
+    markdown = render_markdown(selections, fetch_errors={})
+
+    assert "## The Guardian" in markdown
+    assert "1. [Extra story](https://theguardian.com/x)" in markdown
 
 
 def test_update_readme_link(tmp_path):

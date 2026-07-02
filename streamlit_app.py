@@ -7,6 +7,7 @@ import os
 import streamlit as st
 import streamlit.components.v1 as components
 
+from ann_app.config import OUTLET_ACCENTS
 from ann_app.parse import (
     find_latest_digest,
     flatten_headlines,
@@ -16,12 +17,6 @@ from ann_app.parse import (
 REPO_ROOT = os.path.dirname(os.path.abspath(__file__))
 ROTATION_SECONDS = 10
 
-OUTLET_ACCENTS = {
-    "WSJ": "#4dd0e1",
-    "NYT": "#50a5ff",
-    "NBC": "#7c4dff",
-    "AP": "#c084fc",
-}
 DEFAULT_ACCENT = "#4dd0e1"
 
 
