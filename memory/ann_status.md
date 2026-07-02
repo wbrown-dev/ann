@@ -23,6 +23,11 @@ Current state:
   Gemini; `ANN_MODEL` / `--model` selects the model. Keys remain env/deployment
   secret only (`ANTHROPIC_API_KEY`, `OPENAI_API_KEY`, or `GEMINI_API_KEY` /
   `GOOGLE_API_KEY`) and are never persisted. Gemini default: `gemini-2.5-flash`.
+- Gemini is fully wired into ops: the daily-digest GitHub Actions workflow
+  validates the `gemini` provider and injects `GEMINI_API_KEY` / `GOOGLE_API_KEY`
+  secrets, and DEVOPS.md / DEVELOPMENT.md document the Gemini secret, repo
+  variable, and Docker invocation. Removed the orphaned `headlines20260701.md`
+  (malformed name from a manual upload; matched no `headlines-*.md` glob).
 - The completed Sessions 4-13 roadmap has been compressed into a final-state
   continuity archive for post-roadmap work.
 - Release hardening is in place for v0.2.0: project metadata is bumped,

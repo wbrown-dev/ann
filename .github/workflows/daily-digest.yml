@@ -34,6 +34,8 @@ jobs:
           ANN_MODEL_PROVIDER: ${{ vars.ANN_MODEL_PROVIDER }}
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY }}
         run: |
           set -euo pipefail
           provider="${ANN_MODEL_PROVIDER:-anthropic}"
@@ -51,6 +53,12 @@ jobs:
                 exit 1
               }
               ;;
+            "gemini")
+              test -n "${GEMINI_API_KEY:-}" -o -n "${GOOGLE_API_KEY:-}" || {
+                echo "GEMINI_API_KEY (or GOOGLE_API_KEY) secret is required for ANN_MODEL_PROVIDER=gemini."
+                exit 1
+              }
+              ;;
             *)
               echo "Unsupported ANN_MODEL_PROVIDER: $provider"
               exit 1
@@ -64,6 +72,8 @@ jobs:
           ANN_EXTRA_OUTLETS: ${{ vars.ANN_EXTRA_OUTLETS }}
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY }}
         run: python ann.py run
 
       - name: Commit and push digest

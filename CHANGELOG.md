@@ -15,6 +15,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   returns raw text only, so `filter._parse_response` remains the single
   validation gate and the no-fabrication guarantee is preserved. Keys stay
   env-only and are never persisted.
+- The daily-digest GitHub Actions workflow now recognizes `gemini`: the provider
+  validation step accepts it and requires `GEMINI_API_KEY` (or `GOOGLE_API_KEY`),
+  and both the validation and generate steps inject those secrets. DEVOPS.md and
+  DEVELOPMENT.md document the Gemini secret, repository variable, and Docker run
+  invocation alongside the existing providers.
 
 ## [0.2.0] - 2026-07-02
 

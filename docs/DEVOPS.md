@@ -36,8 +36,9 @@ The digest is generated automatically by
 
 The workflow needs the API key for the selected provider as a repository
 Actions secret (Settings -> Secrets and variables -> Actions -> New repository
-secret): `ANTHROPIC_API_KEY` for the default Anthropic provider, or
-`OPENAI_API_KEY` when `ANN_MODEL_PROVIDER=openai`. Optional repository
+secret): `ANTHROPIC_API_KEY` for the default Anthropic provider,
+`OPENAI_API_KEY` when `ANN_MODEL_PROVIDER=openai`, or `GEMINI_API_KEY` (or
+`GOOGLE_API_KEY`) when `ANN_MODEL_PROVIDER=gemini`. Optional repository
 variables `ANN_MODEL_PROVIDER` and `ANN_MODEL` can switch provider/model without
 editing source, and optional variable `ANN_EXTRA_OUTLETS` can enable
 `GUARDIAN`, `BBC`, and/or `NPR` for scheduled production runs. Secrets are
@@ -59,8 +60,9 @@ model.
 Before relying on the scheduled digest:
 
 1. Confirm Actions are enabled for the repository.
-2. Add one provider secret: `ANTHROPIC_API_KEY` for the default provider, or
-   `OPENAI_API_KEY` plus repository variable `ANN_MODEL_PROVIDER=openai`.
+2. Add one provider secret: `ANTHROPIC_API_KEY` for the default provider,
+   `OPENAI_API_KEY` plus repository variable `ANN_MODEL_PROVIDER=openai`, or
+   `GEMINI_API_KEY` plus repository variable `ANN_MODEL_PROVIDER=gemini`.
 3. Optionally set repository variable `ANN_MODEL` to pin a specific model.
 4. Optionally set `ANN_EXTRA_OUTLETS` in the workflow if production should
    include `GUARDIAN`, `BBC`, or `NPR` beyond the default four outlets.
@@ -102,6 +104,16 @@ docker run --rm -p 8501:8501 \
   ann:latest
 ```
 
+For Gemini:
+
+```bash
+docker run --rm -p 8501:8501 \
+  -e ANN_MODEL_PROVIDER=gemini \
+  -e ANN_MODEL=gemini-2.5-flash \
+  -e GEMINI_API_KEY=... \
+  ann:latest
+```
+
 Or with Compose (mounts the working tree so freshly generated digests appear):
 
 ```bash
@@ -119,8 +131,8 @@ docker compose run --rm ann python ann.py run
 
 ## Secrets
 
-- Provider secrets are `ANTHROPIC_API_KEY` and/or `OPENAI_API_KEY`, injected via
-  environment variables.
+- Provider secrets are `ANTHROPIC_API_KEY`, `OPENAI_API_KEY`, and/or
+  `GEMINI_API_KEY` (or `GOOGLE_API_KEY`), injected via environment variables.
 - Never bake secrets into the image; `.env` is git-ignored and excluded from the
   build context via `.dockerignore`.
 

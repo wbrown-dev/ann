@@ -11,7 +11,7 @@
 ```bash
 python3 -m venv .venv
 .venv/bin/pip install -r requirements.txt
-cp .env.example .env        # add ANTHROPIC_API_KEY or OPENAI_API_KEY
+cp .env.example .env        # add ANTHROPIC_API_KEY, OPENAI_API_KEY, or GEMINI_API_KEY
 ```
 
 ## Generating a digest
@@ -25,15 +25,17 @@ cp .env.example .env        # add ANTHROPIC_API_KEY or OPENAI_API_KEY
 
 ## Model providers
 
-ANN supports Anthropic and OpenAI behind the same index-only selection
-interface. Configure the provider with `ANN_MODEL_PROVIDER` (`anthropic` or
-`openai`) and the model with `ANN_MODEL`, or pass `--model-provider` and
-`--model` to `ann.py run`. Defaults are Anthropic + `claude-sonnet-5`.
+ANN supports Anthropic, OpenAI, and Google Gemini behind the same index-only
+selection interface. Configure the provider with `ANN_MODEL_PROVIDER`
+(`anthropic`, `openai`, or `gemini`) and the model with `ANN_MODEL`, or pass
+`--model-provider` and `--model` to `ann.py run`. Defaults are Anthropic +
+`claude-sonnet-5`.
 
 Secrets are read only from environment variables or deployment secrets:
-`ANTHROPIC_API_KEY` for Anthropic and `OPENAI_API_KEY` for OpenAI. User-entered
-keys must not be written to disk, logs, generated digests, cache snapshots, or
-git. Missing keys fail before any digest is written.
+`ANTHROPIC_API_KEY` for Anthropic, `OPENAI_API_KEY` for OpenAI, and
+`GEMINI_API_KEY` (or `GOOGLE_API_KEY`) for Gemini. User-entered keys must not be
+written to disk, logs, generated digests, cache snapshots, or git. Missing keys
+fail before any digest is written.
 
 ## Running the dashboard
 

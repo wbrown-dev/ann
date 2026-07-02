@@ -24,7 +24,9 @@ release hardening for v0.2.0.
   overwritten generated files every 30 seconds.
 - Providers: Anthropic, OpenAI, and Google Gemini can be selected through
   env/config or CLI flags while preserving index-only selection and env-only key
-  handling (`GEMINI_API_KEY` / `GOOGLE_API_KEY`, default `gemini-2.5-flash`).
+  handling (`GEMINI_API_KEY` / `GOOGLE_API_KEY`, default `gemini-2.5-flash`). The
+  daily-digest workflow validates all three providers and injects each provider's
+  secret; DEVOPS.md and DEVELOPMENT.md document the Gemini path.
 - Release state: `pyproject.toml` is bumped to `0.2.0`, the changelog has a
   dated `0.2.0` section, Dev-Ops documents production setup and release steps,
   and blank GitHub Actions model variables fall back to defaults.
