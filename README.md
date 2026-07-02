@@ -58,7 +58,7 @@ cp .env.example .env          # add your ANTHROPIC_API_KEY
 
 ## The dashboard
 
-The Streamlit app (dark "DTS" visual system) rotates through **every** headline
+The Streamlit app (dark "ANN" visual system) rotates through **every** headline
 in the latest digest in the main window — **10 seconds each, with no repeats
 until all have been shown**, then reshuffles. Each outlet has its own accent
 color, and the full digest is listed below the rotating hero.

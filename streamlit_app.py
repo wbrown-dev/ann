@@ -44,11 +44,11 @@ GLOBAL_CSS = """
 @import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700&family=Space+Grotesk:wght@500;600;700&family=JetBrains+Mono:wght@500&display=swap');
 
 :root {
-  --dts-bg-1: #151a2b;
-  --dts-panel: rgba(22, 26, 46, 0.82);
-  --dts-border: rgba(132, 132, 168, 0.26);
-  --dts-text: #f5f7ff;
-  --dts-text-soft: rgba(245, 247, 255, 0.65);
+  --ann-bg-1: #151a2b;
+  --ann-panel: rgba(22, 26, 46, 0.82);
+  --ann-border: rgba(132, 132, 168, 0.26);
+  --ann-text: #f5f7ff;
+  --ann-text-soft: rgba(245, 247, 255, 0.65);
 }
 
 .stApp {
@@ -56,19 +56,19 @@ GLOBAL_CSS = """
     radial-gradient(circle at 20% 5%, rgba(124, 77, 255, 0.35), transparent 38%),
     radial-gradient(circle at 90% 20%, rgba(80, 165, 255, 0.26), transparent 35%),
     radial-gradient(circle at 60% 100%, rgba(192, 132, 252, 0.16), transparent 30%),
-    linear-gradient(135deg, var(--dts-bg-1), #0f1426 44%, #121833 100%);
-  color: var(--dts-text);
+    linear-gradient(135deg, var(--ann-bg-1), #0f1426 44%, #121833 100%);
+  color: var(--ann-text);
   font-family: 'Manrope', 'Segoe UI', system-ui, sans-serif;
 }
 
 section[data-testid="stSidebar"] {
   background: rgba(15, 19, 36, 0.9);
-  border-right: 1px solid var(--dts-border);
+  border-right: 1px solid var(--ann-border);
 }
 
 h1, h2, h3, h4 {
   font-family: 'Space Grotesk', 'Manrope', sans-serif !important;
-  color: var(--dts-text) !important;
+  color: var(--ann-text) !important;
   letter-spacing: 0.01em;
 }
 
@@ -77,12 +77,12 @@ h1, h2, h3, h4 {
   text-transform: uppercase;
   letter-spacing: 0.32em;
   font-size: 0.72rem;
-  color: var(--dts-text-soft);
+  color: var(--ann-text-soft);
 }
 
 .ann-outlet-card {
-  background: var(--dts-panel);
-  border: 1px solid var(--dts-border);
+  background: var(--ann-panel);
+  border: 1px solid var(--ann-border);
   border-radius: 16px;
   padding: 18px 20px;
   margin-bottom: 16px;
@@ -104,12 +104,12 @@ h1, h2, h3, h4 {
 .ann-item { margin: 8px 0; line-height: 1.45; }
 .ann-rank {
   font-family: 'JetBrains Mono', monospace;
-  color: var(--dts-text-soft);
+  color: var(--ann-text-soft);
   margin-right: 8px;
 }
-.ann-item a { color: var(--dts-text); text-decoration: none; }
+.ann-item a { color: var(--ann-text); text-decoration: none; }
 .ann-item a:hover { text-decoration: underline; }
-.ann-item.no-link { color: var(--dts-text-soft); }
+.ann-item.no-link { color: var(--ann-text-soft); }
 
 ::-webkit-scrollbar { width: 9px; height: 9px; }
 ::-webkit-scrollbar-track { background: rgba(15, 23, 42, 0.7); }

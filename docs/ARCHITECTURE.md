@@ -60,4 +60,4 @@ outlets, and hands them to a self-contained HTML/JS component:
 - Every headline is shown **once before any repeats**; when the set is
   exhausted the component reshuffles and continues.
 - Each outlet has an accent color (WSJ cyan, NYT blue, NBC indigo, AP magenta)
-  matching the dark "DTS" visual system.
+  matching the dark "ANN" visual system.
