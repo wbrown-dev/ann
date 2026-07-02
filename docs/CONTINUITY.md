@@ -43,7 +43,7 @@ dashboard retrospective display, and optional retrospective re-ranking.
 | 9 | Dashboard auto-refresh | `cb41081` |
 | 10 | Model/provider flexibility with safe key handling | `aafb9c4` |
 | 11 | Dashboard tab for the latest retrospective | `b072fc7` |
-| 12 | Optional model-assisted retrospective re-ranking | pending |
+| 12 | Optional model-assisted retrospective re-ranking | `7d647e6` |
 
 ## Next Phase
 
