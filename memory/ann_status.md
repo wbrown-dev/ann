@@ -25,5 +25,8 @@ Quality gate:
 - `.venv/bin/ruff check .`: clean.
 
 Open R&D:
+- Session 10: model/provider flexibility with safe key handling. Start with
+  Anthropic and OpenAI behind one index-only interface; never persist
+  user-entered keys.
 - Optional model-assisted retrospective re-ranking, index-only.
 - Dashboard tab for the latest retrospective.

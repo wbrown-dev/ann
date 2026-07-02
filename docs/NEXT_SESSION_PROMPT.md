@@ -6,8 +6,8 @@ Paste the block below to resume ANN work after the completed roadmap.
 We are continuing work on ANN (All the News You Need) at
 ~/Desktop/development/ANN/. Follow the session-start ritual before writing code:
 
-1. Read docs/CONTINUITY.md for the current state, shipped sessions, invariants,
-   verification baseline, and open ideas.
+1. Read docs/CONTINUITY.md for the current state, shipped sessions, next phase,
+   invariants, verification baseline, and open ideas.
 2. Read docs/DEVELOPMENT.md and docs/ARCHITECTURE.md if the work touches code.
 3. Run `git status` and `git log --oneline -5`.
 4. Restate the requested goal, note the relevant invariant(s), and give a short
@@ -32,3 +32,5 @@ House rules:
 ```
 
 The original Sessions 4-9 roadmap is complete and archived in Git history.
+The current next-phase item is Session 10: model/provider flexibility with safe
+key handling.
