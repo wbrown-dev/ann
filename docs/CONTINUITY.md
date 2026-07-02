@@ -48,7 +48,7 @@ release hardening for v0.2.0.
 | 10 | Model/provider flexibility with safe key handling | `aafb9c4` |
 | 11 | Dashboard tab for the latest retrospective | `b072fc7` |
 | 12 | Optional model-assisted retrospective re-ranking | `7d647e6` |
-| 13 | Release hardening for v0.2.0 | pending |
+| 13 | Release hardening for v0.2.0 | `6311499` |
 
 ## Next Phase
 
