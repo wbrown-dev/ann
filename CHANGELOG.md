@@ -18,11 +18,28 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   original concept author), `CONTRIBUTING`, `CODE_OF_CONDUCT`, `SECURITY`,
   Dockerfile, `docker-compose.yml`, and GitHub Actions CI/CD.
 - Project documentation under `docs/` (architecture, development, dev-ops).
-- Parser and filter test coverage.
+- Parser, filter, and fetch test coverage.
+- `fetch._clean_google_news_title` strips the trailing `" - <Publisher>"`
+  suffix that Google News search RSS appends to every entry title (used for
+  the AP feed).
+- `fetch._fetch_feed` now retries transient network failures (2 retries with
+  linear backoff) and reuses a pooled `requests.Session` across all feeds.
 
 ### Changed
+- `fetch.fetch_outlet` now deduplicates by normalized title in addition to
+  link, so the same story appearing across an outlet's overlapping feeds
+  (e.g. WSJ World + US + Markets) is only sent to the model once.
 - Hardened `ann_app/filter._parse_response` to extract JSON from fenced code
   blocks with surrounding prose and from bare `{...}` objects embedded in text.
+- `render.render_markdown` now derives the short-outlet note threshold from
+  `HEADLINES_PER_OUTLET` instead of a hardcoded `5`.
+
+### Fixed
+- Escaped RSS-sourced headline titles and validated link schemes (http/https
+  only) in the Streamlit dashboard, closing an HTML/script injection vector in
+  both the rotating hero component and the outlet cards.
+- Replaced the Refresh button's `on_click=st.rerun` callback (a no-op/error in
+  modern Streamlit) with a guarded `st.rerun()` on button press.
 
 ## [0.1.0] - 2026-07-02
 

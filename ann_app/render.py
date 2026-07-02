@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from ann_app.config import OUTLET_DISPLAY_NAMES, OUTLET_FEEDS
+from ann_app.config import HEADLINES_PER_OUTLET, OUTLET_DISPLAY_NAMES, OUTLET_FEEDS
 from ann_app.fetch import Candidate
 
 
@@ -29,7 +29,7 @@ def render_markdown(
         count = len(selections.get(outlet, []))
         if error:
             notes.append(f"- **{outlet}** — feed fetch issue: {error}")
-        elif count < 5:
+        elif count < HEADLINES_PER_OUTLET:
             notes.append(f"- **{outlet}** — only {count} usable headline(s) found within the lookback window.")
 
     lines.append("## Note")

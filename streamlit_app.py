@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import html
 import json
 import os
 
@@ -22,6 +23,14 @@ OUTLET_ACCENTS = {
     "AP": "#c084fc",
 }
 DEFAULT_ACCENT = "#4dd0e1"
+
+
+def _safe_url(link: str | None) -> str | None:
+    """Only allow http(s) links; drop javascript:/data: and other schemes."""
+    if link and link.lower().startswith(("http://", "https://")):
+        return link
+    return None
+
 
 st.set_page_config(
     page_title="ANN — All the News You Need",
@@ -250,9 +259,16 @@ def _rotation_component(headlines: list[dict], accents: dict[str, str]) -> str:
       badgeEl.style.color = accent;
       badgeEl.style.borderColor = accent;
       rankEl.textContent = '#' + item.rank;
-      if (item.link) {{
-        titleEl.innerHTML = '<a href="' + item.link + '" target="_blank" rel="noopener">' + item.title + '</a>';
-        linkEl.textContent = item.link.replace(/^https?:\\/\\//, '');
+      const safeLink = (item.link && /^https?:\\/\\//i.test(item.link)) ? item.link : null;
+      if (safeLink) {{
+        titleEl.textContent = '';
+        const a = document.createElement('a');
+        a.href = safeLink;
+        a.target = '_blank';
+        a.rel = 'noopener';
+        a.textContent = item.title;
+        titleEl.appendChild(a);
+        linkEl.textContent = safeLink.replace(/^https?:\\/\\//, '');
       }} else {{
         titleEl.textContent = item.title;
         linkEl.textContent = 'cross-verified summary — no source link';
@@ -297,11 +313,13 @@ def _render_digest(sections) -> None:
         accent = OUTLET_ACCENTS.get(section.outlet, DEFAULT_ACCENT)
         items_html = []
         for h in section.headlines:
-            if h.link:
-                body = f'<a href="{h.link}" target="_blank" rel="noopener">{h.title}</a>'
+            title = html.escape(h.title)
+            link = _safe_url(h.link)
+            if link:
+                body = f'<a href="{html.escape(link, quote=True)}" target="_blank" rel="noopener">{title}</a>'
                 cls = "ann-item"
             else:
-                body = h.title
+                body = title
                 cls = "ann-item no-link"
             items_html.append(f'<div class="{cls}"><span class="ann-rank">{h.rank:02d}</span>{body}</div>')
         if not items_html:
@@ -326,7 +344,8 @@ def main() -> None:
         st.divider()
         if latest:
             st.markdown(f"**Digest:** `{os.path.basename(latest)}`")
-        st.button("Refresh digest", use_container_width=True, on_click=st.rerun)
+        if st.button("Refresh digest", use_container_width=True):
+            st.rerun()
         st.divider()
         st.markdown('<div class="ann-kicker">Outlets</div>', unsafe_allow_html=True)
         for outlet, accent in OUTLET_ACCENTS.items():
