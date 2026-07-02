@@ -44,3 +44,11 @@ Quality gate:
 
 Open R&D:
 - Additional providers behind the same normalized index-only interface.
+
+Next session — Security review (not yet done):
+- No dedicated security eval performed. Incidental scan found injection surface
+  handled (`_safe_url` scheme allowlist + title escaping, no exec sinks,
+  env-only secrets, least-privilege CI). Eval should still cover: SSRF host
+  allowlist in `resolve.py`, feedparser XXE posture, `pip-audit` + action/dep
+  pinning, and security regression tests for `_safe_url`/escaping. See
+  `docs/CONTINUITY.md` "Security Review".

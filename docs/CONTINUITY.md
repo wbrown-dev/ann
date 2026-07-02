@@ -76,3 +76,20 @@ No next phase is selected. See open ideas below.
 
 - Consider additional providers only behind the same normalized index-only
   interface and env/in-memory key boundaries.
+
+## Security Review (not yet done — next session)
+
+No dedicated security evaluation has been performed. A quick incidental scan
+found the injection surface handled (dashboard escapes titles and allowlists
+link schemes via `_safe_url`; no `subprocess`/`eval`/`exec`/`pickle`; secrets
+are env-only and never printed; CI uses least-privilege `contents: write`). A
+proper eval should still cover:
+
+- SSRF in `resolve.py`: `session.get(link)` fetches a feed-derived URL with no
+  host allowlist. Add an allowlist (e.g. `news.google.com`) before the request.
+- feedparser XXE posture: confirm the pinned `feedparser` disables external
+  entity resolution on `feedparser.parse(response.content)`.
+- Supply-chain pinning: `requirements.txt` uses unbounded `>=`; GitHub Actions
+  reference mutable tags. Run `pip-audit`; consider pinning versions/action SHAs.
+- Add security regression tests for `_safe_url` and title escaping so the XSS
+  protections cannot be silently dropped by a refactor.
