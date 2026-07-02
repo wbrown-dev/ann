@@ -42,7 +42,7 @@ def test_select_headlines_index_only_and_ranked():
     candidates = _wsj(4)
     client = StubClient('{"WSJ": [2, 0]}')
 
-    result = select_headlines(candidates, client=client)
+    result = select_headlines(candidates, client=client, provider="anthropic")
 
     assert [c.title for c in result["WSJ"]] == ["WSJ 2", "WSJ 0"]
     assert all(c in candidates for c in result["WSJ"])
@@ -53,7 +53,7 @@ def test_select_headlines_truncates_to_headlines_per_outlet():
     candidates = _wsj(10)
     client = StubClient('{"WSJ": [0, 1, 2, 3, 4, 5, 6]}')
 
-    result = select_headlines(candidates, client=client)
+    result = select_headlines(candidates, client=client, provider="anthropic")
 
     assert len(result["WSJ"]) == 5
     assert [c.title for c in result["WSJ"]] == ["WSJ 0", "WSJ 1", "WSJ 2", "WSJ 3", "WSJ 4"]
@@ -63,7 +63,7 @@ def test_select_headlines_rejects_out_of_range_and_non_int():
     candidates = _wsj(3)
     client = StubClient('{"WSJ": [0, 9, "x", 2]}')
 
-    result = select_headlines(candidates, client=client)
+    result = select_headlines(candidates, client=client, provider="anthropic")
 
     assert [c.title for c in result["WSJ"]] == ["WSJ 0", "WSJ 2"]
 
