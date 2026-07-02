@@ -1,10 +1,10 @@
 # ANN Status
 
-Last updated: 2026-07-02
+Last updated: 2026-07-02 (post-roadmap: Gemini provider)
 
-Sessions 4-13 are shipped. Session 12 added optional provider-assisted
-retrospective re-ranking by story index. Session 13 prepared ANN for a v0.2.0
-release.
+Sessions 4-13 are shipped. Session 13 prepared ANN for a v0.2.0 release.
+Post-roadmap: added Google Gemini as a third index-only model provider
+(unreleased).
 
 Current state:
 - Daily digest pipeline is complete: fetch -> provider index-only filter ->
@@ -19,9 +19,10 @@ Current state:
 - The dashboard has daily digest and weekly retrospective tabs, auto-checks the
   latest generated files every 30 seconds, and reruns when filename or mtime
   changes.
-- `ANN_MODEL_PROVIDER` / `--model-provider` can select Anthropic or OpenAI;
-  `ANN_MODEL` / `--model` selects the model. Keys remain env/deployment secret
-  only (`ANTHROPIC_API_KEY` or `OPENAI_API_KEY`) and are never persisted.
+- `ANN_MODEL_PROVIDER` / `--model-provider` can select Anthropic, OpenAI, or
+  Gemini; `ANN_MODEL` / `--model` selects the model. Keys remain env/deployment
+  secret only (`ANTHROPIC_API_KEY`, `OPENAI_API_KEY`, or `GEMINI_API_KEY` /
+  `GOOGLE_API_KEY`) and are never persisted. Gemini default: `gemini-2.5-flash`.
 - The completed Sessions 4-13 roadmap has been compressed into a final-state
   continuity archive for post-roadmap work.
 - Release hardening is in place for v0.2.0: project metadata is bumped,
@@ -30,7 +31,7 @@ Current state:
   back to defaults.
 
 Quality gate:
-- `.venv/bin/python -m pytest`: 83 passed.
+- `.venv/bin/python -m pytest`: 87 passed.
 - `.venv/bin/ruff check .`: clean.
 
 Open R&D:

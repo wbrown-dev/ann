@@ -83,6 +83,15 @@ def test_resolve_model_settings_accepts_openai():
     assert model == "gpt-test"
 
 
+def test_resolve_model_settings_accepts_gemini_default_model(monkeypatch):
+    monkeypatch.delenv("ANN_MODEL", raising=False)
+
+    provider, model = resolve_model_settings("gemini")
+
+    assert provider == "gemini"
+    assert model == "gemini-2.5-flash"
+
+
 def test_resolve_model_settings_rejects_unknown_provider():
     try:
         resolve_model_settings("local", "model")

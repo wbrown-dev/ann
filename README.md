@@ -56,9 +56,10 @@ cp .env.example .env          # add your provider API key
 .venv/bin/streamlit run streamlit_app.py   # open the dashboard on :8501
 ```
 
-By default ANN uses Anthropic (`ANTHROPIC_API_KEY`). To use OpenAI instead, set
-`OPENAI_API_KEY` and run with `ANN_MODEL_PROVIDER=openai`, or pass
-`--model-provider openai --model <model-name>`.
+By default ANN uses Anthropic (`ANTHROPIC_API_KEY`). To use OpenAI or Google
+Gemini instead, set the matching key (`OPENAI_API_KEY`, or `GEMINI_API_KEY`) and
+run with `ANN_MODEL_PROVIDER=openai` / `ANN_MODEL_PROVIDER=gemini`, or pass
+`--model-provider <provider> --model <model-name>`.
 
 ## The dashboard
 

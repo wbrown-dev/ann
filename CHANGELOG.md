@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- Google Gemini as a third model provider for index-only selection. Set
+  `GEMINI_API_KEY` (or `GOOGLE_API_KEY`) and run with `ANN_MODEL_PROVIDER=gemini`
+  or `--model-provider gemini`; the default model is `gemini-2.5-flash`. The
+  Gemini adapter in `ann_app/providers.py` calls `models.generate_content` and
+  returns raw text only, so `filter._parse_response` remains the single
+  validation gate and the no-fabrication guarantee is preserved. Keys stay
+  env-only and are never persisted.
+
 ## [0.2.0] - 2026-07-02
 
 ### Added

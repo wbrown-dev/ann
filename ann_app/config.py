@@ -17,6 +17,7 @@ MODEL_PROVIDER = (_env_value("ANN_MODEL_PROVIDER") or "anthropic").lower()
 DEFAULT_MODEL_BY_PROVIDER = {
     "anthropic": "claude-sonnet-5",
     "openai": "gpt-4.1-mini",
+    "gemini": "gemini-2.5-flash",
 }
 MODEL_NAME = _env_value("ANN_MODEL") or DEFAULT_MODEL_BY_PROVIDER.get(
     MODEL_PROVIDER,

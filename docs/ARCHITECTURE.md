@@ -49,11 +49,13 @@ it as `link = None`.
 
 `ann.py run` resolves `ANN_MODEL_PROVIDER` / `ANN_MODEL` or the CLI flags
 `--model-provider` / `--model`, then passes that choice into
-`filter.select_headlines`. `ann_app/providers.py` owns provider-specific SDK
-shape differences:
+`filter.select_headlines`. Supported providers are `anthropic`, `openai`, and
+`gemini`. `ann_app/providers.py` owns provider-specific SDK shape differences:
 
 - Anthropic uses `ANTHROPIC_API_KEY` and `messages.create`.
 - OpenAI uses `OPENAI_API_KEY` and the Responses API.
+- Gemini uses `GEMINI_API_KEY` (or `GOOGLE_API_KEY`) and
+  `models.generate_content`.
 
 Provider adapters return raw text only. `filter._parse_response` remains the
 single validation gate: the response must be a JSON object mapping outlet names

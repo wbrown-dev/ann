@@ -22,15 +22,16 @@ release hardening for v0.2.0.
   `--rerank-model`.
 - Dashboard: daily digest and weekly retrospective tabs auto-check for new or
   overwritten generated files every 30 seconds.
-- Providers: Anthropic and OpenAI can be selected through env/config or CLI
-  flags while preserving index-only selection and env-only key handling.
+- Providers: Anthropic, OpenAI, and Google Gemini can be selected through
+  env/config or CLI flags while preserving index-only selection and env-only key
+  handling (`GEMINI_API_KEY` / `GOOGLE_API_KEY`, default `gemini-2.5-flash`).
 - Release state: `pyproject.toml` is bumped to `0.2.0`, the changelog has a
   dated `0.2.0` section, Dev-Ops documents production setup and release steps,
   and blank GitHub Actions model variables fall back to defaults.
 
 ## Verification Baseline
 
-- `.venv/bin/python -m pytest`: 83 passing.
+- `.venv/bin/python -m pytest`: 87 passing.
 - `.venv/bin/ruff check .`: clean.
 - Use `.venv/bin/python -m pytest`; the system Python 3.14 may not have all
   project dependencies.
