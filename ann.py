@@ -26,6 +26,13 @@ def run(target_date: date, dry_run: bool, within_hours: int) -> int:
         print(f"error: {exc}", file=sys.stderr)
         return 1
 
+    if sum(len(picks) for picks in selections.values()) == 0:
+        print(
+            "error: no headlines selected; refusing to write an empty digest",
+            file=sys.stderr,
+        )
+        return 2
+
     markdown = render_markdown(selections, fetch_result.errors)
 
     filename = f"headlines-{target_date.isoformat()}.md"

@@ -11,6 +11,41 @@ CI runs on every push and pull request to `main`
    starts the container, and polls Streamlit's `/_stcore/health` endpoint to
    prove the app boots.
 
+## Scheduled daily digest
+
+The digest is generated automatically by
+[`.github/workflows/daily-digest.yml`](../.github/workflows/daily-digest.yml):
+
+- **Schedule:** `cron: "0 11 * * *"` — 11:00 UTC daily (06:00 US Eastern /
+  03:00 US Pacific). The 36-hour default lookback window keeps timing
+  non-critical. Adjust the cron line to move the run.
+- **Manual re-run:** the workflow also exposes `workflow_dispatch`, so a
+  maintainer can trigger it from the Actions tab at any time.
+- **What it does:** installs deps, runs `python ann.py run`, then stages the new
+  `headlines-YYYY-MM-DD.md` and the updated `README.md` link and pushes them as
+  `ann-bot`.
+- **Failure is loud and safe:** `ann.py run` exits non-zero on a fetch/model
+  failure or when zero headlines are selected (it refuses to write an empty
+  digest). A non-zero exit stops the job before the commit step, so a failed run
+  commits nothing.
+- **No CI loop:** the digest commit message ends with `[skip ci]`, and
+  `daily-digest.yml` is not triggered by `push`, so the generated commit does not
+  retrigger CI or the digest workflow.
+
+### Required secret
+
+The workflow needs `ANTHROPIC_API_KEY` as a repository Actions secret
+(Settings -> Secrets and variables -> Actions -> New repository secret). It is
+injected into the generate step via `env:` and masked by GitHub in logs; it is
+never committed and never printed by `ann.py`.
+
+### Local alternative (launchd)
+
+For a local-only cadence instead of GitHub Actions, schedule
+`~/.venv/bin/python ann.py run` from the repo root with a launchd agent (macOS)
+or cron (Linux) at the equivalent local time. This is documented as an option;
+the shipped default is the GitHub Actions workflow above.
+
 ## Container
 
 The image is defined in [`Dockerfile`](../Dockerfile):

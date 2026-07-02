@@ -8,6 +8,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- `.github/workflows/daily-digest.yml` — scheduled GitHub Actions workflow that
+  runs `ann.py run` daily at 11:00 UTC (and on manual `workflow_dispatch`),
+  commits the new `headlines-YYYY-MM-DD.md` + README link as `ann-bot`, and
+  pushes. The digest commit carries `[skip ci]` to avoid retriggering CI.
+- `ann.py run` now refuses to write an empty digest: if zero headlines are
+  selected it exits non-zero and writes nothing, so a failed scheduled run
+  commits nothing.
 - `ann_app/parse.py` — structured parser that turns a `headlines-YYYY-MM-DD.md`
   digest into typed outlet/headline objects, plus a helper to locate the latest
   digest.

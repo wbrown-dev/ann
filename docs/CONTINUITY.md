@@ -10,8 +10,9 @@ priority but are mostly independent — pick the next one, or reorder as needed.
   index-only/no-fabrication (`ann_app/filter.py`) -> render
   (`ann_app/render.py`) -> `headlines-YYYY-MM-DD.md` -> Streamlit dashboard
   (`streamlit_app.py`).
-- **Quality gate:** 26 tests passing, ruff clean. CI/CD green (lint + test
+- **Quality gate:** 28 tests passing, ruff clean. CI/CD green (lint + test
   matrix + Docker build/health smoke). Dockerized (`docker compose up` -> :8501).
+  Daily digest automated via `.github/workflows/daily-digest.yml` (Session 4).
 - **Latest commit:** `cdf7f4e` on `origin/main` (dashboard XSS hardening,
   cross-feed title dedup, transient-fetch retry).
 - **No open bugs or code TODOs.** Everything below is enhancement or ops work.
@@ -56,15 +57,21 @@ launchd plist — document but do not default to it.)
 - `docs/DEVOPS.md` (document the schedule, secret, and manual re-run)
 
 **Tasks:**
-- [ ] Add scheduled workflow (pick a fixed UTC time; document the local
+- [x] Add scheduled workflow (pick a fixed UTC time; document the local
       equivalent).
-- [ ] Configure `ANTHROPIC_API_KEY` as a GitHub Actions secret (document; the
+- [x] Configure `ANTHROPIC_API_KEY` as a GitHub Actions secret (document; the
       secret itself is set by the maintainer, not committed).
-- [ ] Commit + push the generated digest from the workflow (bot identity,
+- [x] Commit + push the generated digest from the workflow (bot identity,
       `[skip ci]` on the digest commit to avoid loops).
-- [ ] Add a `workflow_dispatch` trigger for manual runs.
-- [ ] Guard against empty/failed generation (do not commit an empty digest;
+- [x] Add a `workflow_dispatch` trigger for manual runs.
+- [x] Guard against empty/failed generation (do not commit an empty digest;
       fail the job with a clear message).
+
+**Status:** Done (commit `<pending>`). Shipped
+`.github/workflows/daily-digest.yml` (cron `0 11 * * *` + `workflow_dispatch`,
+`[skip ci]` digest commits as `ann-bot`) and an empty-digest guard in `ann.py`
+(exit code 2, writes nothing). 28 tests passing (was 26); DEVOPS.md documents
+schedule, secret, manual re-run, and launchd alternative.
 
 **Acceptance criteria:**
 - Workflow runs on schedule and on manual dispatch.
@@ -257,4 +264,5 @@ component.
 3. Update `CHANGELOG.md` under `[Unreleased]`.
 4. Check the session's boxes here and note the commit hash.
 5. Update `memory/ann_status.md` with the new state.
-6. Commit + push.
+6. Commit at the end of every session (this is mandatory, not optional); push
+   when confirmed.
