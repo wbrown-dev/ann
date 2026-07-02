@@ -1,0 +1,28 @@
+ANN — All the News You Need
+===========================
+
+Original concept and premise
+----------------------------
+The idea behind this project — a tiny daily news digest built on the premise
+that news consumption is not a civic virtue, and that most people do not need
+to follow the news to be well-informed — originates with **ulyssestenn**.
+
+  Original repository: https://github.com/ulyssestenn/allthenewsyouneed
+
+The premise text, the selection standard, and the digest format described in
+this repository derive from that original work. Full rights and credit for the
+original idea are reserved to its author. This repository is an independent
+implementation that codes what is described in the original project's Markdown
+specification.
+
+This implementation
+-------------------
+Copyright (c) 2026 William C. Brown and the ANN contributors.
+Released under the MIT License (see LICENSE).
+
+Third-party sources
+-------------------
+Headlines are fetched from the public RSS feeds of the respective outlets
+(WSJ, NYT, NBC) and, for AP, from a Google News site-scoped query. All
+headline text and links remain the property of their respective publishers and
+are used here only to reference and link to the original reporting.

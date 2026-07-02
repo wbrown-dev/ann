@@ -1,0 +1,15 @@
+services:
+  ann:
+    build: .
+    image: ann:latest
+    container_name: ann
+    ports:
+      - "8501:8501"
+    environment:
+      # Supplied from your shell or an .env file; never bake secrets into the image.
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
+      ANN_MODEL: ${ANN_MODEL:-claude-sonnet-5}
+    volumes:
+      # Mount the working tree so freshly generated digests appear in the UI.
+      - ./:/app
+    restart: unless-stopped
