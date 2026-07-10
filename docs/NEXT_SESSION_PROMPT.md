@@ -17,7 +17,7 @@ Definition of done:
 - The requested behavior is implemented and documented where appropriate.
 - New behavior has focused tests using pure functions or mocked boundaries; do
   not add live-network or live-model tests.
-- `.venv/bin/python -m pytest` passes.
+- `.venv/bin/python -m pytest` passes (baseline: 133).
 - `.venv/bin/ruff check .` is clean.
 - CHANGELOG.md is updated under [Unreleased].
 - docs/CONTINUITY.md and memory/ann_status.md reflect the new state when the
@@ -29,7 +29,14 @@ House rules:
 - Preserve no fabrication: the model selects headlines by index only.
 - Never run `source .env`; never print or commit secrets; never `git add .env`.
 - Only modify files within ~/Desktop/development/ANN/.
+- Never interpolate untrusted values into a <script> block with plain
+  json.dumps; use streamlit_app._script_json.
+- Tests touching ann.run must patch both ann.REPO_ROOT and ann.DIGEST_DIR.
+- Keep the image immutable: no source bind-mount over /app, no dev tooling.
 ```
 
-The Sessions 4-13 roadmap is complete and archived in Git history. No next
-phase is currently selected; see docs/CONTINUITY.md open ideas.
+The Sessions 4-14 roadmap is complete and archived in Git history. ANN is
+production-ready as of v0.4.0: the security review is closed, the container is
+hardened and verified, and CI gates lint, tests, `pip-audit`, and container
+invariants. No next phase is currently selected; see docs/CONTINUITY.md open
+ideas (Actions SHA pinning, GHCR publishing).

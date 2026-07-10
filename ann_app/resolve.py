@@ -20,8 +20,17 @@ _SG = re.compile(r'data-n-a-sg="([^"]+)"')
 _TS = re.compile(r'data-n-a-ts="([^"]+)"')
 
 
+_ALLOWED_RESOLVE_HOST = "news.google.com"
+
+
 def _is_google_news_url(link: str) -> bool:
-    return urlparse(link).hostname == "news.google.com"
+    parsed = urlparse(link)
+    return parsed.scheme == "https" and parsed.hostname == _ALLOWED_RESOLVE_HOST
+
+
+def _is_safe_resolved_url(link: str) -> bool:
+    parsed = urlparse(link)
+    return parsed.scheme in {"http", "https"} and bool(parsed.netloc)
 
 
 def _extract_params(html: str) -> tuple[str, int, str] | None:
@@ -106,7 +115,9 @@ def resolve_google_news_url(
         return link
     if cache is not None and link in cache:
         return cache[link]
-    resolved = _resolve(link, session) or link
+    resolved = _resolve(link, session)
+    if not resolved or not _is_safe_resolved_url(resolved):
+        resolved = link
     if cache is not None:
         cache[link] = resolved
     return resolved

@@ -57,7 +57,7 @@ confirmed, the digest carries a cross-verified summary with no link.
 
 ```bash
 python3 -m venv .venv
-.venv/bin/pip install -r requirements.txt
+.venv/bin/pip install -r requirements-dev.txt   # or requirements.txt for runtime only
 cp .env.example .env          # add your provider API key
 
 .venv/bin/python ann.py run   # generate today's digest
@@ -81,8 +81,13 @@ appears. The dashboard checks for updated digest files every 30 seconds.
 
 ```bash
 export ANTHROPIC_API_KEY=sk-...
-docker compose up --build     # http://localhost:8501
+docker compose up --build          # dashboard on http://localhost:8501
+docker compose run --rm digest     # generate a digest into the shared volume
 ```
+
+The image runs as a non-root user with a read-only root filesystem; generated
+digests live on the `ann-digests` volume (`ANN_DIGEST_DIR=/data`) rather than in
+the image or a bind-mounted source tree.
 
 See [`docs/DEVOPS.md`](docs/DEVOPS.md) for image details and CI.
 

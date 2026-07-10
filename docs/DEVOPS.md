@@ -83,9 +83,29 @@ the shipped default is the GitHub Actions workflow above.
 The image is defined in [`Dockerfile`](../Dockerfile):
 
 - Base: `python:3.12-slim`.
-- Installs `requirements.txt`, copies the app and any existing digests.
+- Installs `requirements.txt` (runtime only — `pytest` and `ruff` live in
+  `requirements-dev.txt` and never enter the image) and copies the app.
+- Runs as non-root user `ann` (uid `10001`).
 - Runs Streamlit headless on port **8501** with a container `HEALTHCHECK`
   against `/_stcore/health`.
+
+### Digests are runtime state, not image layers
+
+Generated `headlines-*.md` and `retrospective-*.md` files live in the directory
+named by `ANN_DIGEST_DIR`. It defaults to the repo root for local use; the image
+sets it to `/data`, which Compose backs with the named `ann-digests` volume.
+
+This keeps the image immutable: the source tree is never bind-mounted over
+`/app` (which would also expose `.env` to the container), and digests are never
+baked into layers. `ann.py run` skips the README link update when no README is
+present, so a container writing into `/data` does not need a checkout.
+
+### Runtime hardening
+
+Compose runs the dashboard with a read-only root filesystem, `cap_drop: ALL`,
+`no-new-privileges`, `mem_limit`, and `pids_limit`. Streamlit's writable scratch
+(`/tmp`, `/home/ann/.streamlit`) is provided by `tmpfs`. CI additionally asserts
+that the image runs as uid `10001` and that `pytest` is not importable inside it.
 
 ### Build and run locally
 
@@ -114,20 +134,28 @@ docker run --rm -p 8501:8501 \
   ann:latest
 ```
 
-Or with Compose (mounts the working tree so freshly generated digests appear):
+Or with Compose (digests persist on the `ann-digests` volume):
 
 ```bash
 export ANTHROPIC_API_KEY=sk-...
 docker compose up --build
 ```
 
-App: http://localhost:8501
+App: <http://localhost:8501>
 
 ### Generating a digest inside the container
 
+The `digest` service writes into the same volume the dashboard reads:
+
 ```bash
-docker compose run --rm ann python ann.py run
+docker compose run --rm digest
 ```
+
+### CI container checks
+
+The `docker` job builds the image, asserts it does not run as root, asserts test
+tooling is absent, then starts it and polls `/_stcore/health`. A separate
+`audit` job runs `pip-audit` against the pinned `requirements.txt`.
 
 ## Secrets
 

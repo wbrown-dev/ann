@@ -7,9 +7,39 @@ services:
       - "8501:8501"
     environment:
       # Supplied from your shell or an .env file; never bake secrets into the image.
+      ANN_MODEL_PROVIDER: ${ANN_MODEL_PROVIDER:-anthropic}
+      ANN_MODEL: ${ANN_MODEL:-}
+      ANN_EXTRA_OUTLETS: ${ANN_EXTRA_OUTLETS:-}
       ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
-      ANN_MODEL: ${ANN_MODEL:-claude-sonnet-5}
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+      GEMINI_API_KEY: ${GEMINI_API_KEY:-}
     volumes:
-      # Mount the working tree so freshly generated digests appear in the UI.
-      - ./:/app
+      # Generated digests only. The source tree is never mounted over /app, so
+      # the running image stays immutable and .env cannot leak into the container.
+      - ann-digests:/data
+    read_only: true
+    tmpfs:
+      # Streamlit needs a writable HOME and scratch space under a read-only root.
+      - /tmp
+      - /home/ann/.streamlit
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    mem_limit: 1g
+    pids_limit: 256
     restart: unless-stopped
+
+  # One-shot digest generation, writing into the same volume the dashboard reads.
+  #   docker compose run --rm digest
+  digest:
+    extends:
+      service: ann
+    container_name: ann-digest
+    ports: []
+    restart: "no"
+    profiles: ["tools"]
+    command: ["python", "ann.py", "run"]
+
+volumes:
+  ann-digests:

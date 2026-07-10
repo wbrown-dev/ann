@@ -10,9 +10,13 @@
 
 ```bash
 python3 -m venv .venv
-.venv/bin/pip install -r requirements.txt
+.venv/bin/pip install -r requirements-dev.txt   # runtime deps + pytest/ruff
 cp .env.example .env        # add ANTHROPIC_API_KEY, OPENAI_API_KEY, or GEMINI_API_KEY
 ```
+
+`requirements.txt` holds pinned runtime dependencies and is the only file the
+production image installs. `requirements-dev.txt` includes it and adds the test
+and lint tooling.
 
 ## Generating a digest
 
@@ -87,6 +91,20 @@ original Google News link is used and the run still succeeds. Set
 `ANN_RESOLVE_URLS=0` to disable it entirely (kill switch if Google changes the
 encoding again). The scheme is undocumented and has changed before (2024), so
 treat this as best-effort.
+
+## Digest location
+
+`ANN_DIGEST_DIR` selects the directory that `headlines-*.md` and
+`retrospective-*.md` files are written to and read from. It defaults to the repo
+root, so local development needs no configuration. The container sets it to
+`/data` (a mounted volume) so the image itself stays immutable and read-only.
+
+When `ANN_DIGEST_DIR` points outside a checkout, `ann.py run` writes the digest
+and skips the README link update.
+
+Tests that exercise `ann.run` must patch both `ann.REPO_ROOT` (README target) and
+`ann.DIGEST_DIR` (digest target); patching only the former writes generated
+digests into the repository root.
 
 ## Extra outlets
 

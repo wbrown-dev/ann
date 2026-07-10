@@ -1,5 +1,8 @@
+import os
+
 from ann_app.config import (
     DEFAULT_OUTLET_FEEDS,
+    resolve_digest_dir,
     resolve_model_settings,
     resolve_outlet_config,
 )
@@ -99,3 +102,25 @@ def test_resolve_model_settings_rejects_unknown_provider():
         assert "unsupported model provider" in str(exc)
     else:
         raise AssertionError("expected ValueError")
+
+
+def test_digest_dir_defaults_to_repo_root():
+    assert resolve_digest_dir(None, repo_root="/repo") == "/repo"
+
+
+def test_digest_dir_blank_env_treated_as_unset():
+    assert resolve_digest_dir("   ", repo_root="/repo") == "/repo"
+
+
+def test_digest_dir_env_override_is_absolute():
+    assert resolve_digest_dir("/srv/digests", repo_root="/repo") == "/srv/digests"
+
+
+def test_digest_dir_strips_whitespace_and_expands_user():
+    assert resolve_digest_dir("  ~/d  ", repo_root="/repo") == os.path.expanduser("~/d")
+
+
+def test_digest_dir_relative_path_is_resolved_to_absolute():
+    result = resolve_digest_dir("digests", repo_root="/repo")
+    assert os.path.isabs(result)
+    assert result.endswith("digests")

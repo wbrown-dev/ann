@@ -171,6 +171,23 @@ def resolve_model_settings(provider: str | None = None, model: str | None = None
 REQUEST_TIMEOUT_SECONDS = 10
 USER_AGENT = "Mozilla/5.0 (compatible; ANN-digest/1.0)"
 
+_REPO_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
+
+def resolve_digest_dir(raw: str | None, repo_root: str = _REPO_ROOT) -> str:
+    """Directory holding generated headlines-*.md / retrospective-*.md files.
+
+    Defaults to the repo root so local use is unchanged. Containers point
+    ANN_DIGEST_DIR at a mounted volume, which keeps the image immutable and
+    read-only instead of bind-mounting the source tree over /app.
+    """
+    if not raw or not raw.strip():
+        return repo_root
+    return os.path.abspath(os.path.expanduser(raw.strip()))
+
+
+DIGEST_DIR = resolve_digest_dir(os.environ.get("ANN_DIGEST_DIR"))
+
 # AP links arrive as opaque news.google.com redirect URLs. Resolving them to the
 # canonical apnews.com article costs two extra requests per link, so it runs on
 # selected headlines only. Kill switch in case Google changes the scheme again.

@@ -17,6 +17,7 @@ def test_run_writes_digest_and_updates_readme(tmp_path, monkeypatch):
     readme.write_text("# ANN\n\n[Go to Today's Headlines.](headlines-old.md)\n", encoding="utf-8")
 
     monkeypatch.setattr(ann, "REPO_ROOT", str(tmp_path))
+    monkeypatch.setattr(ann, "DIGEST_DIR", str(tmp_path))
     monkeypatch.setattr(ann, "fetch_all", lambda within_hours: _fetch_result())
     monkeypatch.setattr(
         ann,
@@ -35,6 +36,7 @@ def test_run_writes_digest_and_updates_readme(tmp_path, monkeypatch):
 
 def test_run_refuses_empty_digest(tmp_path, monkeypatch):
     monkeypatch.setattr(ann, "REPO_ROOT", str(tmp_path))
+    monkeypatch.setattr(ann, "DIGEST_DIR", str(tmp_path))
     monkeypatch.setattr(ann, "fetch_all", lambda within_hours: _fetch_result())
     monkeypatch.setattr(
         ann,
@@ -64,6 +66,7 @@ def test_run_use_cache_skips_fetch(tmp_path, monkeypatch):
         raise AssertionError("fetch_all must not be called with --use-cache")
 
     monkeypatch.setattr(ann, "REPO_ROOT", str(tmp_path))
+    monkeypatch.setattr(ann, "DIGEST_DIR", str(tmp_path))
     monkeypatch.setattr(ann, "fetch_all", _fail_fetch)
     monkeypatch.setattr("ann_app.cache.DEFAULT_CACHE_DIR", str(cache_dir))
     monkeypatch.setattr(
@@ -84,6 +87,7 @@ def test_run_passes_model_provider_and_model(tmp_path, monkeypatch):
     seen = {}
 
     monkeypatch.setattr(ann, "REPO_ROOT", str(tmp_path))
+    monkeypatch.setattr(ann, "DIGEST_DIR", str(tmp_path))
     monkeypatch.setattr(ann, "fetch_all", lambda within_hours: _fetch_result())
 
     def _select(candidates, **kwargs):
@@ -102,3 +106,25 @@ def test_run_passes_model_provider_and_model(tmp_path, monkeypatch):
 
     assert rc == 0
     assert seen == {"provider": "openai", "model": "gpt-test"}
+
+
+def test_run_writes_digest_to_separate_digest_dir_without_readme(tmp_path, monkeypatch):
+    """Container shape: digests land in a mounted volume and there is no checkout."""
+    repo = tmp_path / "repo"
+    digests = tmp_path / "digests"
+    repo.mkdir()
+
+    monkeypatch.setattr(ann, "REPO_ROOT", str(repo))
+    monkeypatch.setattr(ann, "DIGEST_DIR", str(digests))
+    monkeypatch.setattr(ann, "fetch_all", lambda within_hours: _fetch_result())
+    monkeypatch.setattr(
+        ann,
+        "select_headlines",
+        lambda candidates, **kwargs: {"WSJ": candidates, "NYT": [], "NBC": [], "AP": []},
+    )
+
+    rc = ann.run(date(2026, 7, 2), dry_run=False, within_hours=36)
+
+    assert rc == 0
+    assert (digests / "headlines-2026-07-02.md").exists()
+    assert not (repo / "README.md").exists()

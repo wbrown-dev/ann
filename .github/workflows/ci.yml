@@ -29,13 +29,28 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install -r requirements.txt ruff
+          pip install -r requirements-dev.txt
 
       - name: Lint (ruff)
         run: ruff check .
 
       - name: Test (pytest)
         run: python -m pytest -q
+
+  audit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Audit pinned runtime dependencies
+        run: |
+          python -m pip install --upgrade pip pip-audit
+          pip-audit -r requirements.txt --progress-spinner off
 
   docker:
     runs-on: ubuntu-latest
@@ -55,6 +70,17 @@ jobs:
           tags: ann:ci
           cache-from: type=gha
           cache-to: type=gha,mode=max
+
+      - name: Assert the image does not run as root
+        run: |
+          uid="$(docker run --rm ann:ci id -u)"
+          test "$uid" = "10001" || { echo "image runs as uid $uid, expected 10001"; exit 1; }
+
+      - name: Assert test tooling is absent from the image
+        run: |
+          if docker run --rm ann:ci python -c "import pytest" 2>/dev/null; then
+            echo "pytest must not be installed in the production image"; exit 1
+          fi
 
       - name: Smoke test container health
         run: |

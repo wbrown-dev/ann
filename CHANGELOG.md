@@ -7,14 +7,57 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.4.0] - 2026-07-10
+
+Production-readiness release: completes the security review that `0.3.0` left
+open and reshapes the container from a development convenience into a
+deployable, immutable artifact.
+
 ### Security
-- Hardened digest rendering and dashboard ingestion for untrusted RSS content:
-  Markdown output now escapes headline link text, only emits `http`/`https`
-  links, and wraps links in angle delimiters; the digest parser understands
-  that safer link form. The Streamlit dashboard validates links with
-  `urlparse`, builds outlet buttons with DOM text nodes instead of interpolated
-  `innerHTML`, and the Google News resolver now matches the exact
-  `news.google.com` hostname rather than a substring.
+- **Fixed a stored XSS in the dashboard.** `_dashboard_component` interpolated
+  `json.dumps(headlines)` directly into a `<script>` block. The HTML tokenizer
+  terminates a script element at a literal `</script>` even inside a JavaScript
+  string, and `json.dumps` escapes neither `<` nor `/`, so a feed title
+  containing `</script>` could close the tag and inject markup. The surrounding
+  `textContent` writes did not protect this sink. All script-context values now
+  go through `_script_json`, which escapes `<`, `>`, and `&`.
+- The Google News resolver now requires the exact `https://news.google.com`
+  origin (scheme *and* host) before issuing a request, and validates that the
+  resolved publisher URL is `http`/`https` before it is adopted, falling back to
+  the original link otherwise.
+- Added `tests/test_security.py`: regression coverage for script-context
+  escaping, `_safe_url` / `_safe_markdown_url` scheme allowlists, markdown link
+  escaping, the resolver host allowlist, and feedparser's external-entity
+  posture, so a refactor cannot silently drop these protections.
+- Confirmed the pinned `feedparser` does not resolve external entities (XXE),
+  and locked that behavior in with a test.
+- Runtime dependencies are pinned to exact versions for reproducible builds. CI
+  gained a `pip-audit` job over `requirements.txt`.
+
+### Added
+- `ANN_DIGEST_DIR` selects where generated `headlines-*.md` and
+  `retrospective-*.md` files are written and read. It defaults to the repo root,
+  so local use is unchanged; containers point it at a mounted volume.
+- A `digest` Compose service (`docker compose run --rm digest`) generates a
+  digest into the same volume the dashboard reads.
+
+### Changed
+- **The container is now production-shaped.** It runs as a non-root user
+  (uid `10001`), installs runtime dependencies only (`pytest` and `ruff` no
+  longer ship in the image), and no longer bakes digests into image layers.
+  Compose runs it with a read-only root filesystem, `cap_drop: ALL`,
+  `no-new-privileges`, and memory/PID limits.
+- Compose no longer bind-mounts the working tree over `/app`. That mount made
+  the image mutable at runtime and exposed `.env` to the container; digests now
+  live on a named `ann-digests` volume.
+- `ann.py run` only rewrites the README link when a README is present, so a
+  container writing into a mounted digest volume no longer requires a checkout.
+- Dev and test tooling moved to `requirements-dev.txt`; CI installs that.
+- CI asserts the image runs as non-root and contains no test tooling.
+
+### Fixed
+- The test suite no longer writes generated digests into the repository root
+  when exercising `ann.run`.
 
 ## [0.3.0] - 2026-07-02
 

@@ -7,7 +7,7 @@ from urllib.parse import urlparse
 
 import streamlit as st
 
-from ann_app.config import OUTLET_ACCENTS
+from ann_app.config import DIGEST_DIR, OUTLET_ACCENTS
 from ann_app.parse import (
     find_latest_digest,
     find_latest_digest_state,
@@ -15,7 +15,6 @@ from ann_app.parse import (
     parse_digest,
 )
 
-REPO_ROOT = os.path.dirname(os.path.abspath(__file__))
 ROTATION_SECONDS = 10
 REFRESH_POLL_SECONDS = 30
 
@@ -31,6 +30,23 @@ def _safe_url(link: str | None) -> str | None:
     if parsed.scheme in {"http", "https"} and parsed.netloc:
         return link
     return None
+
+
+def _script_json(value) -> str:
+    """JSON for embedding inside a <script> block.
+
+    The HTML tokenizer ends the script element at a literal ``</script>`` even
+    inside a JS string, so a feed title containing one would break out of the
+    tag. json.dumps escapes neither ``<`` nor ``/``. Its default
+    ensure_ascii=True already escapes U+2028/U+2029, which are legal in JSON
+    but are line terminators in JS source.
+    """
+    return (
+        json.dumps(value)
+        .replace("<", "\\u003c")
+        .replace(">", "\\u003e")
+        .replace("&", "\\u0026")
+    )
 
 
 st.set_page_config(
@@ -110,9 +126,9 @@ def _dashboard_component(
     accents: dict[str, str],
     story_date: str,
 ) -> str:
-    payload = json.dumps(headlines)
-    accents_json = json.dumps(accents)
-    outlets = json.dumps(list(accents))
+    payload = _script_json(headlines)
+    accents_json = _script_json(accents)
+    outlets = _script_json(list(accents))
     return f"""
 <!doctype html>
 <html lang="en">
@@ -581,7 +597,7 @@ def _dashboard_component(
   const outlets = {outlets};
   const defaultAccent = "{DEFAULT_ACCENT}";
   const rotationMs = {ROTATION_SECONDS * 1000};
-  const storyDate = {json.dumps(story_date)};
+  const storyDate = {_script_json(story_date)};
 
   const titleEl = document.getElementById('headline');
   const metaEl = document.getElementById('story-meta');
@@ -746,9 +762,9 @@ def _watch_latest_content(repo_root: str) -> None:
 
 
 def main() -> None:
-    latest = find_latest_digest(REPO_ROOT)
-    st.session_state[CONTENT_STATE_KEY] = _content_signature(REPO_ROOT)
-    _watch_latest_content(REPO_ROOT)
+    latest = find_latest_digest(DIGEST_DIR)
+    st.session_state[CONTENT_STATE_KEY] = _content_signature(DIGEST_DIR)
+    _watch_latest_content(DIGEST_DIR)
 
     if not latest:
         st.warning("No digest found. Run `python ann.py run` to generate today's headlines.")

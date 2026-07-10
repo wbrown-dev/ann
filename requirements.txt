@@ -1,8 +1,10 @@
-feedparser>=6.0.11
-requests>=2.32.0
-anthropic>=0.40.0
-openai>=1.0.0
-google-genai>=1.0.0
-python-dotenv>=1.0.1
-streamlit>=1.40.0
-pytest>=8.0.0
+# Runtime dependencies. Pinned for reproducible builds; bump deliberately and
+# re-run the suite. Dev/test tooling lives in requirements-dev.txt and is never
+# installed into the production image.
+feedparser==6.0.12
+requests==2.34.2
+anthropic==0.115.1
+openai==2.44.0
+google-genai==2.11.0
+python-dotenv==1.2.2
+streamlit==1.58.0

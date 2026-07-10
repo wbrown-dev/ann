@@ -6,7 +6,7 @@ import sys
 from datetime import date
 
 from ann_app.cache import CacheError, load_candidates, save_candidates
-from ann_app.config import SUPPORTED_MODEL_PROVIDERS, resolve_model_settings
+from ann_app.config import DIGEST_DIR, SUPPORTED_MODEL_PROVIDERS, resolve_model_settings
 from ann_app.fetch import fetch_all
 from ann_app.filter import FilterError, select_headlines
 from ann_app.render import render_markdown, update_readme_link
@@ -83,20 +83,24 @@ def run(
     markdown = render_markdown(selections, errors)
 
     filename = f"headlines-{target_date.isoformat()}.md"
-    out_path = os.path.join(REPO_ROOT, filename)
+    out_path = os.path.join(DIGEST_DIR, filename)
 
     if dry_run:
         print(f"\n--- {filename} (dry run, not written) ---\n")
         print(markdown)
         return 0
 
+    os.makedirs(DIGEST_DIR, exist_ok=True)
     with open(out_path, "w", encoding="utf-8") as f:
         f.write(markdown)
     print(f"Wrote {out_path}")
 
+    # The README link is a repo artifact, not a digest artifact: a container
+    # writing into a mounted ANN_DIGEST_DIR has no checkout to update.
     readme_path = os.path.join(REPO_ROOT, "README.md")
-    update_readme_link(readme_path, filename)
-    print(f"Updated {readme_path}")
+    if os.path.exists(readme_path):
+        update_readme_link(readme_path, filename)
+        print(f"Updated {readme_path}")
 
     return 0
 
@@ -125,7 +129,7 @@ def retro(
 
     try:
         result = build_retrospective(
-            REPO_ROOT,
+            DIGEST_DIR,
             days=days,
             top=top,
             rerank=rerank_model,
@@ -156,7 +160,8 @@ def retro(
         print(result.markdown)
         return 0
 
-    out_path = os.path.join(REPO_ROOT, result.filename)
+    os.makedirs(DIGEST_DIR, exist_ok=True)
+    out_path = os.path.join(DIGEST_DIR, result.filename)
     with open(out_path, "w", encoding="utf-8") as f:
         f.write(result.markdown)
     print(f"Wrote {out_path}")

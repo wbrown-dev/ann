@@ -207,6 +207,7 @@ def test_build_retrospective_can_rerank_with_stub_provider(tmp_path):
 def test_retro_refuses_below_min_digests(tmp_path, monkeypatch):
     (tmp_path / "headlines-2026-07-02.md").write_text(DAY3, encoding="utf-8")
     monkeypatch.setattr(ann, "REPO_ROOT", str(tmp_path))
+    monkeypatch.setattr(ann, "DIGEST_DIR", str(tmp_path))
 
     rc = ann.retro(days=7, top=10, dry_run=False)
 
@@ -217,6 +218,7 @@ def test_retro_refuses_below_min_digests(tmp_path, monkeypatch):
 def test_retro_writes_file(tmp_path, monkeypatch):
     _write_week(tmp_path)
     monkeypatch.setattr(ann, "REPO_ROOT", str(tmp_path))
+    monkeypatch.setattr(ann, "DIGEST_DIR", str(tmp_path))
 
     rc = ann.retro(days=7, top=10, dry_run=False)
 
@@ -229,6 +231,7 @@ def test_retro_writes_file(tmp_path, monkeypatch):
 def test_retro_passes_rerank_model_provider_and_model(tmp_path, monkeypatch):
     _write_week(tmp_path)
     monkeypatch.setattr(ann, "REPO_ROOT", str(tmp_path))
+    monkeypatch.setattr(ann, "DIGEST_DIR", str(tmp_path))
     seen = {}
 
     def _build(repo_root, **kwargs):
